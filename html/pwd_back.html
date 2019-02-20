@@ -1,0 +1,212 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0" />
+	<title>忘记密码</title>
+	<link rel="stylesheet" type="text/css" href="../css/aui.css" />
+	<link rel="stylesheet" type="text/css" href="../css/aui-win.css" />
+</head>
+<style>
+	body {
+		background: #fff;
+	}
+
+	.form {
+		width: 90%;
+		margin: 0 auto;
+		margin-top: 40px;
+	}
+	.p {
+		margin-top: 20px;
+	}
+
+	.sms {
+		width: 60%;
+	}
+</style>
+
+<body>
+	<header class="aui-bar aui-bar-nav aui-bar-light" style="padding-top:25px;">
+		<a class="aui-pull-left">
+			<span class="aui-iconfont aui-icon-left" onclick="api.closeWin();"></span>
+		</a>
+		<div class="aui-title">忘记密码</div>
+	</header>
+	<div class="form" id="box">
+		<ul class="aui-list aui-form-list ui-width">
+			<li class="aui-list-item">
+				<div class="aui-list-item-inner">
+					<div class="aui-list-item-label">
+						手机号
+					</div>
+					<div class="aui-list-item-input">
+						<input type="number" placeholder="请输入注册时的手机号" v-model="username">
+					</div>
+				</div>
+			</li>
+			<li class="aui-list-item">
+				<div class="aui-list-item-inner">
+					<div class="aui-list-item-label">
+						密码
+					</div>
+					<div class="aui-list-item-input">
+						<input type="password" v-model="password" placeholder="设置您新的登陆密码">
+					</div>
+				</div>
+			</li>
+			<li class="aui-list-item">
+				<div class="aui-list-item-inner">
+
+					<div class="aui-list-item-input">
+						<input type="text" v-model="code" placeholder="验证码">
+					</div>
+					<div class="aui-btn aui-btn-danger sms" onclick="vm.sendSms(this)">获取验证码</div>
+				</div>
+			</li>
+		</ul>
+		<p class="p">
+			<div class="aui-btn aui-btn-block" onclick="vm.verify()">提交</div>
+		</p>
+	</div>
+</body>
+
+</html>
+<script type="text/javascript" src="../script/api.js"></script>
+<script type="text/javascript" src="../script/vue.js"></script>
+<script type="text/javascript" src="../script/aui-toast.js"></script>
+<script type="text/javascript">
+	apiready = function() {
+		api.parseTapmode();
+	}
+	var vm = new Vue({
+		el: '#box',
+		data: {
+			wait: 60,
+			username: '',
+			password: '',
+			code: '',
+			id: '',
+			codeinfo: ''
+		},
+		methods: {
+			time: function(o) {
+				if (vm.wait == 0) {
+					o.onclick = function() {
+						sendSms(o);
+					}
+					o.innerHTML = "获取验证码";
+					vm.wait = 60;
+				} else {
+					o.onclick = function() {
+						return false;
+					};
+					o.innerHTML = "重新发送(" + vm.wait + ")";
+					vm.wait--;
+					setTimeout(function() {
+						vm.time(o)
+					}, 1000)
+				}
+			},
+			// 发短信验证码
+            sendSms: function(o) {
+                setTimeout(function() {
+                    if (vm.username != null && vm.username.length == 11) {
+                        vm.time(o);
+                        var codeinfo = '';
+                        for (var i = 0; i < 4; i++) {
+                            codeinfo += Math.floor(Math.random() * 10)
+                        }
+                        vm.codeinfo = codeinfo;
+                        api.ajax({
+                            url: 'http://token.isee.la/alipay/api_demo/SmsDemo.php?phonenumber='+vm.username+'&codeinfo=' + codeinfo,
+                            method: 'get'
+                        }, function(ret, err) {
+                            api.toast({
+                                msg: '短信发送成功！',
+                                duration: 2000,
+                                location: 'bottom'
+                            });
+                        });
+
+                    } else {
+                        api.toast({
+                            msg: '手机号输入有误！'
+                        });
+                    }
+
+                }, 1000)
+            },
+			verify: function() {
+				api.showProgress({
+					title: '请稍后...',
+					modal: false
+				});
+				if (vm.username.length == 11 && vm.password.length >= 6) {
+					if (vm.codeinfo == vm.code) {
+
+							var query = api.require("query");
+
+							query.createQuery(function(ret, err) {
+								if (ret && ret.qid) {
+									var queryId = ret.qid;
+
+									query.whereEqual({
+										qid: queryId,
+										column: "username",
+										value: vm.username
+									});
+
+									query.limit({
+										qid: queryId,
+										value: "20"
+									});
+
+									var model = api.require("model");
+
+									model.findAll({
+										class: "user",
+										qid: queryId
+									}, function(ret, err) {
+										if (ret) {
+											var user = api.require('user');
+											user.updatePassword({
+											    password: vm.password
+											}, function(ret, err) {
+											    if( ret ){
+													api.hideProgress();
+															api.toast({
+																msg: '重置成功，请重新登陆',
+																duration: 2000,
+																location: 'bottom'
+															});
+											    }else{
+													alert('重置失败，请检查网络！');
+
+													api.hideProgress();
+											    }
+											});
+
+										} else {
+											api.hideProgress();
+											alert("\nerr: " + JSON.stringify(err));
+										}
+									});
+								}else {
+									alert('qid创建失败！');
+									api.hideProgress();
+								}
+							});
+					}else {
+						alert('验证码错误！')
+					}
+				} else {
+					api.alert({
+						msg: '手机号或密码格式不正确'
+					});
+					api.hideProgress();
+				}
+			}
+		}
+	})
+</script>

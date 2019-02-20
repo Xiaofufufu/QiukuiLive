@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="../css/aui.css" />
+    <link rel="stylesheet" type="text/css" href="../css/aui-pull-refresh.css" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0" />
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>首页</title>
+    <style>
+    .top {
+        position: fixed;
+        top: 0;
+        z-index: 1199;
+    }
+    </style>
+</head>
+<body>
+    <header class="aui-bar aui-bar-nav top aui-bar-light" style="padding-top:25px;">
+        <a class="aui-pull-right" onclick="vm.addNew()" tapmode>
+            <span class="aui-iconfont aui-icon-pencil"></span>
+        </a>
+        <div class="aui-title">内涵图</div>
+    </header>
+    <div class="aui-refresh-content" style="margin-top:70px">
+        <div class="aui-content aui-margin-b-15">
+            <ul class="aui-list aui-media-list" id="bx">
+                <li class="aui-list-item" v-for="item in news">
+                    <div class="aui-list-item-inner">
+                        <div class="aui-info" style="padding-top:0">
+                            <div class="aui-info-item">
+                                <img :src="item.userimg +'?imageView2/1/w/200/h/200'" style="width:2rem" class="aui-img-round"  v-if="item.userimg">
+                                <img src="../icon/icon.png" style="width:2rem" class="aui-img-round" v-else>
+                                <span class="aui-margin-l-5">{{item.nikename}}</span>
+                            </div>
+                            <div class="aui-info-item">{{item.updatedAt}}</div>
+                        </div>
+                        <div class="aui-list-item-title ">{{item.title}}</div>
+                        <div class="aui-row aui-row-padded">
+                            <div class="aui-col-xs-12">
+                                <img :src="item.img.url" />
+                            </div>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+</body>
+
+<script type="text/javascript" src="../script/api.js"></script>
+<script type="text/javascript" src="../script/aui-toast.js"></script>
+<script type="text/javascript" src="../script/aui-pull-refresh.js"></script>
+<script type="text/javascript" src="../script/vue.min.js"></script>
+<script type="text/javascript">
+    apiready = function() {
+        vm.listenLoginOn();
+        vm.getUserInfo();
+        vm.listenLoginOut();
+        vm.getNews();
+        vm.listenAddNews();
+    }
+    var pullRefresh = new auiPullToRefresh({
+        container: document.querySelector('.aui-refresh-content'),
+        triggerDistance: 100
+    }, function(ret) {
+        if (ret.status == "success") {
+            vm.getNews();
+        }
+    })
+    var vm = new Vue({
+        el: '#bx',
+        data: {
+            userInfo: '',
+            news: []
+        },
+        methods: {
+            listenAddNews: function() {
+                api.addEventListener({
+                    name: 'addNews'
+                }, function(ret, err) {
+                    var toast = new auiToast({});
+                    toast.custom({
+                        title: "发表成功",
+                        html: '<i class="aui-iconfont aui-icon-laud"></i>',
+                        duration: 2000
+                    });
+                    vm.getNews();
+                });
+            },
+            getUserInfo: function() {
+                if (vm.isLogin()) {
+                    vm.userInfo = $api.getStorage('user');
+                }
+            },
+            isLogin: function() {
+                var user = $api.getStorage('user');
+                if (user) {
+                    return true;
+                } else {
+                    var toast = new auiToast({});
+                    toast.fail({
+                        title: "请登录后重试",
+                        duration: 2000
+                    });
+                    return false;
+                }
+            },
+            listenLoginOn: function() {
+                api.addEventListener({
+                    name: 'loginOn'
+                }, function(ret, err) {
+                    vm.getUserInfo()
+                });
+            },
+            listenLoginOut: function() {
+                api.addEventListener({
+                    name: 'loginOut'
+                }, function(ret, err) {
+                    vm.user = '';
+                    vm.collection = [];
+                });
+            },
+            getNews: function() {
+                var query = api.require("query");
+
+                query.createQuery(function(ret, err) {
+                    if (ret && ret.qid) {
+                        var queryId = ret.qid;
+
+                        query.whereEqual({
+                            qid: queryId,
+                            column: "",
+                            value: ""
+                        });
+                        query.desc({
+                            qid: queryId,
+                            column: 'id'
+                        });
+
+                        query.limit({
+                            qid: queryId,
+                            value: "30"
+                        });
+
+                        var model = api.require("model");
+
+                        model.findAll({
+                            class: "news",
+                            qid: queryId
+                        }, function(ret, err) {
+                            if (ret) {
+                                 pullRefresh.cancelLoading();
+                                var toast = new auiToast({});
+                                toast.success({
+                                    title: "加载成功！",
+                                    duration: 2000
+                                });
+                                vm.news = ret;
+                            } else {
+                                 pullRefresh.cancelLoading();
+                                var toast = new auiToast({});
+                                toast.fail({
+                                    title: "获取失败，请检查网络！",
+                                    duration: 2000
+                                });
+                            }
+                        });
+                    }
+                });
+
+            },
+            addNew: function() {
+                if (vm.isLogin()) {
+                    api.openWin({
+                        name: 'tools-addnews',
+                        url: './tools-addnews.html',
+                        pageParam: {
+                            name: 'test'
+                        }
+                    });
+                } else {
+
+                }
+            }
+
+        }
+    })
+</script>
+
+</html>

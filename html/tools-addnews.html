@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="../css/aui.css" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0" />
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>首页</title>
+    <style>
+    .aui-list{
+        padding: 0 0.8rem;
+    }
+        .input {
+            line-height: 2rem;
+            font-size: 2rem;
+            height: 2rem;
+        }
+        .img {
+            margin: 0.8rem auto;
+        }
+        .btn{
+            margin-bottom: 0.8rem;
+        }
+        .img-div{
+            min-height: 12rem;
+            background-image: url();
+        }
+    </style>
+</head>
+
+<body>
+    <header class="aui-bar aui-bar-nav aui-bar-light" style="padding-top:25px;">
+        <a class="aui-pull-left" onclick="api.closeWin();" tapmode>
+            <span class="aui-iconfont aui-icon-left"></span>
+        </a>
+        <div class="aui-title" id="title">发布内涵图</div>
+
+    </header>
+
+
+    <div class="aui-content aui-margin-b-15" id="bx">
+        <ul class="aui-list aui-form-list">
+            <li class="aui-list-item">
+                <input type="text" placeholder="请输入你的内涵" class="input" v-model="title">
+            </li>
+            <!-- <img :src="img.url" alt="" class="img" v-if="img.url"  v-on:click="selcetImg()"> -->
+            <img :src="img.url" data-src="holder.js/600x300?text=点击上传图片" alt="" class="img" v-on:click="selcetImg()">
+            <!-- <p class="btn">
+                <div class="aui-btn aui-btn-info btn" v-on:click="upImg()"><span class="aui-iconfont aui-icon-edit"></span>上传图片</div>
+            </p> -->
+
+            <p><div class="aui-btn aui-btn-primary aui-btn-block" v-on:click="vm.submitNew()">提交内涵</div></p>
+
+
+        </ul>
+    </div>
+
+</body>
+<script type="text/javascript" src="../script/api.js"></script>
+<script type="text/javascript" src="../script/aui-toast.js"></script>
+<script type="text/javascript" src="../script/vue.min.js"></script>
+<script type="text/javascript" src="../script/aui-dialog.js"></script>
+<script type="text/javascript" src="../script/holder.min.js"></script>
+<script type="text/javascript">
+    apiready = function() {
+        vm.getUserInfo()
+    }
+
+    var vm = new Vue({
+        el: '#bx',
+        data: {
+            userInfo: '',
+            appVersion: '',
+            img: {
+                url:'',
+            },
+            title:''
+        },
+        methods: {
+            getUserInfo: function() {
+                vm.userInfo = $api.getStorage('user');
+                vm.appVersion = api.appVersion;
+            },
+            upImg:function (imgUrl) {
+                var toast = new auiToast({});
+                toast.loading({
+                    title: "图像上传中！",
+                    duration: 2000
+                });
+                var model = api.require('model');
+                model.uploadFile({
+                    data: {
+                        file: {
+                            url: imgUrl
+                        }
+                    }
+                }, function(ret, err){
+                    if( ret ){
+                        console.log(JSON.stringify(ret));
+                        vm.img = {
+                            url: ret.url,
+                            name: ret.name,
+                            id: ret.id
+                        }
+                        toast.hide();
+                        toast.success({
+                            title: "上传成功！",
+                            duration: 2000
+                        });
+                    }else{
+                         alert( JSON.stringify( err ) );
+                    }
+                });
+            },
+            getLibrary:function () {
+                api.getPicture({
+                    sourceType: 'library',
+                    encodingType: 'jpg',
+                    mediaValue: 'pic',
+                    destinationType: 'url',
+                    allowEdit: true,
+                    saveToPhotoAlbum: false
+                }, function(ret, err) {
+                    console.log(JSON.stringify(ret));
+                    if (ret.data) {
+                        vm.upImg(ret.data);
+                    } else {
+                        var toast = new auiToast({})
+                        toast.fail({
+                            title: "上传取消",
+                            duration: 2000
+                        });
+                    }
+                });
+            },
+            getCam:function () {
+                api.getPicture({
+                    sourceType: 'camera',
+                    encodingType: 'jpg',
+                    mediaValue: 'pic',
+                    destinationType: 'url',
+                    allowEdit: true,
+                    saveToPhotoAlbum: false
+                }, function(ret, err) {
+                    console.log(JSON.stringify(ret));
+                    if (ret.data) {
+                        vm.upImg(ret.data);
+                    } else {
+                        var toast = new auiToast({})
+                        toast.fail({
+                            title: "上传取消",
+                            duration: 2000
+                        });
+                    }
+                });
+            },
+            selcetImg:function () {
+                api.actionSheet({
+                    title: '选择上传目录',
+                    cancelTitle: '取消上传',
+                    buttons: ['相机', '相册']
+                }, function(ret, err) {
+                    var index = ret.buttonIndex;
+                    console.log();
+                    if (index==1) {
+                        vm.getCam();
+                    }else if (index==2) {
+                        vm.getLibrary();
+                    }
+                });
+
+            },
+            submitNew:function () {
+                if (vm.title&&vm.img) {
+                    api.showProgress({
+                        title: '正在上传...',
+                        text: '先喝杯茶...',
+                        modal: true
+                    });
+                    if (vm.userInfo.nikename) {
+                        var name = vm.userInfo.nikename;
+                    }else {
+                        var name = '秋葵'
+                    }
+                    if (vm.userInfo.img) {
+                        var touxiang = vm.userInfo.img.url;
+                    }else {
+                        var touxiang = 'http://80f6vq.com1.z0.glb.clouddn.com/apicloud/9637383dbab4a28bba46820aec0b83cc.png';
+                    }
+                    var relation = api.require('relation');
+                    relation.insert({
+                        class: 'user',
+                        id: vm.userInfo.id,
+                        column: 'news',
+                        value: {
+                            title: vm.title,
+                            img: vm.img,
+                            nikename: name,
+                            userimg: touxiang
+
+                        }
+                    }, function(ret, err){
+                         if( ret ){
+                             api.sendEvent({
+                                 name: 'loginOn',
+                                 extra: {
+                                     loginInfo: ret
+                                 }
+                             });
+                             api.sendEvent({
+                                 name: 'addNews',
+                                 extra: {
+                                     loginInfo: ret
+                                 }
+                             });
+                             api.closeWin({});
+
+                         }else{
+                            alert( JSON.stringify( err) );
+                         }
+                    });
+                }else {
+                    var toast = new auiToast({})
+                    toast.fail({
+                        title: "请查看标题和图片是否都填写！",
+                        duration: 2000
+                    });
+                }
+
+            }
+        }
+    });
+</script>
+
+</html>

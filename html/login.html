@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="../css/aui.css" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0" />
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>登陆</title>
+    <style>
+        .login {
+            width: 90%;
+            margin: 0 auto;
+            margin-top: 40px;
+        }
+
+        .app-img {
+            width: 30%;
+            height: auto;
+            margin: 0 auto;
+            margin-top: 40px;
+        }
+        .btn-p {
+            text-align: center;
+            margin: 5px;
+        }
+
+        .pwd-back {
+            text-align: right;
+            margin: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="aui-bar aui-bar-nav aui-bar-light" style="padding-top:25px;">
+        <a class="aui-pull-left">
+            <span class="aui-iconfont aui-icon-left"></span>
+        </a>
+        <div class="aui-title">登陆</div>
+    </header>
+    <div class="aui-tips aui-margin-b-15 aui-hide" id="tips-1">
+        <i class="aui-iconfont aui-icon-info"></i>
+        <div class="aui-tips-title">用户名或密码错误请重试！</div>
+        <i class="aui-iconfont aui-icon-close" onclick="clickHid()"></i>
+    </div>
+    <div class="app-img">
+        <img src="../icon/icon150x150.png" alt="">
+    </div>
+    <div class="login" id="box">
+        <ul class="aui-list aui-form-list ui-width">
+            <li class="aui-list-item">
+                <div class="aui-list-item-inner">
+                    <div class="aui-list-item-label-icon">
+                        <i class="aui-iconfont aui-icon-my"></i>
+                    </div>
+                    <div class="aui-list-item-input">
+                        <input type="text" placeholder="使用手机号登陆" v-model="username">
+                    </div>
+                </div>
+            </li>
+            <li class="aui-list-item">
+                <div class="aui-list-item-inner">
+                    <div class="aui-list-item-label-icon">
+                        <i class="aui-iconfont aui-icon-lock"></i>
+                    </div>
+                    <div class="aui-list-item-input">
+                        <input type="password" placeholder="请输入密码" v-model="password">
+                    </div>
+                </div>
+            </li>
+        </ul>
+        <!-- <p class="pwd-back" onclick="vm.pwd_back()">忘记密码？</p> -->
+        <div class="btn">
+            <p>
+                <div class="aui-btn aui-btn-primary aui-btn-block" onclick="vm.login()">登 录</div>
+            </p>
+            <p class="btn-p">or</p>
+            <p>
+                <div class="aui-btn aui-btn-block" onclick="vm.register()">注 册</div>
+            </p>
+        </div>
+
+    </div>
+</body>
+<script type="text/javascript" src="../script/vue.min.js"></script>
+<script type="text/javascript" src="../script/api.js"></script>
+<script type="text/javascript">
+    apiready = function() {
+        vm.listenReg();
+    }
+
+    var vm = new Vue({
+        el: '#box',
+        data: {
+            username: '',
+            password: ''
+        },
+        methods: {
+            listenReg:function () {
+                api.addEventListener({
+                    name: 'register'
+                }, function(ret, err) {
+                    // alert('已连接网络');
+                    console.log("监听到注册成功事件！");
+                    if (ret) {
+                        vm.username = ret.value.username,
+                        vm.password = ret.value.password
+                    }
+                });
+            },
+            login: function() {
+                var username = vm.username;
+                var password = vm.password;
+                if (username == "") {
+                    api.toast({
+                        msg: '请输入用户名！'
+                    });
+                    return;
+                }
+                if (password == "") {
+                    api.toast({
+                        msg: '请输入密码！'
+                    });
+                    return;
+                } else {
+                    // 加载登陆提示窗口
+                    api.showProgress({
+                        style: 'default',
+                        animationType: 'fade',
+                        title: '努力加载中...',
+                        text: '先喝杯茶...',
+                        modal: true
+                    });
+
+                    // 初始化登陆函数
+                    var user = api.require('user');
+                    user.login({
+                        username: username,
+                        password: password
+                    }, function(ret, err) {
+                        if (ret) {
+                            $api.setStorage('login', ret);
+                            var model = api.require("model");
+                            var login = $api.getStorage('login');
+                            model.findById({
+                                class: "user",
+                                id: ret.userId
+                            }, function(ret, err) {
+                                if (ret) {
+                                    $api.setStorage('user', ret);
+                                    vm.userInfo = ret;
+                                    //  存储登陆时获取的内容
+                                    api.sendEvent({
+                                        name: 'loginOn',
+                                        extra: {
+                                            loginInfo: ret
+                                        }
+                                    });
+                                    api.hideProgress();
+                                    api.closeWin();
+                                }
+                            });
+                        } else {
+                            api.toast({
+                                msg: '登陆失败，请检查你的用户名和密码是否正确！',
+                                duration: 2000,
+                                location: 'bottom'
+                            });
+                            api.hideProgress();
+                        }
+                    });
+                }
+            },
+            pwd_back: function() {
+                api.openWin({
+                    name: 'pwd_back',
+                    url: './pwd_back.html',
+                    pageParam: {
+                        name: 'pwd_back'
+                    }
+                });
+            },
+            register: function() {
+                api.openWin({
+                    name: 'register',
+                    url: './register.html'
+                });
+            }
+        }
+    })
+</script>
+
+</html>

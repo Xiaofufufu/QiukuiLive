@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="../css/aui.css" />
+    <link rel="stylesheet" type="text/css" href="../css/aui-pull-refresh.css" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0" />
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>首页</title>
+    <style>
+        .top {
+            position: fixed;
+            top: 0;
+            z-index: 1199;
+        }
+        .doubanimg{
+            max-height:7rem;
+            overflow: hidden;
+        }
+        .aui-grid [class*=aui-col-]{
+            padding: 0 0.4rem;
+            margin: 0.6rem 0;
+        }
+        .bianlan{
+            background: #fff;
+            padding: 0.4rem;
+            height: 2rem;
+            border-top: solid #f5f5f5 0.001rem;
+            border-bottom: solid #f5f5f5 0.001rem;
+        }
+        .wenzi{
+            line-height: 1.2rem;
+            font-size: 0.8rem;
+            border-left: 0.1rem solid #e51c23;
+            display: inline-block;
+            padding-left: 0.6rem;
+            margin-left: 0.2rem;
+            font-weight: bold;
+        }
+        .wenzi-right{
+            float: right;
+            line-height: 1.2rem;
+            font-size: 0.8rem;
+            display: inline-block;
+            font-size:0.6rem;
+            color: #c1c1c1;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="aui-content aui-margin-b-15" id="bx">
+        <header class="aui-bar aui-bar-nav aui-bar-light" style="padding-top:25px;">
+            磁力搜索
+        </header>
+        <div class="aui-searchbar" id="search">
+            <div class="aui-searchbar-input aui-border-radius" tapmode="">
+                <i class="aui-iconfont aui-icon-search"></i>
+                <form action="javascript:search();">
+                    <input type="search" placeholder="请输入搜索内容" id="search-input">
+                </form>
+            </div>
+            <div class="aui-searchbar-cancel" tapmod="" v-on:click="doSearch()">搜索</div>
+        </div>
+
+        <ul class="aui-list aui-list-in" v-if="cili">
+            <li class="aui-list-item" v-for="item in cili" v-on:click="copyTo(item)">
+                <div class="aui-list-item-inner">
+                    <div class="aui-list-item-title aui-ellipsis-1">{{item.name}}</div>
+                </div>
+            </li>
+        </ul>
+        <section class="aui-grid aui-margin-b-15" v-else>
+            <div class="bianlan">
+                <div class="wenzi">
+                    豆瓣最热
+                </div>
+                <div class="wenzi-right">
+                    <!-- 合计:约120个 -->
+                </div>
+            </div>
+            <div class="aui-row">
+                <div class="aui-col-xs-4" v-for="item in douban" v-on:click="getCili(item.title)">
+                    <div class="doubanimg">
+                        <img :src="item.images.small" alt="">
+                    </div>
+                    <div class="aui-grid-label aui-ellipsis-1">{{item.title}}</div>
+                </div>
+            </div>
+        </section>
+    </div>
+</body>
+
+<script type="text/javascript" src="../script/api.js"></script>
+<script type="text/javascript" src="../script/aui-toast.js"></script>
+<script type="text/javascript" src="../script/aui-pull-refresh.js"></script>
+<script type="text/javascript" src="../script/vue.min.js"></script>
+<script type="text/javascript">
+    apiready = function() {
+        vm.getDoubanTop();
+    }
+
+    var searchBar = document.querySelector(".aui-searchbar-input");
+    if (searchBar) {
+        searchBar.onclick = function() {
+            document.querySelector(".aui-searchbar-cancel").style.marginRight = 0;
+        }
+    }
+    document.querySelector(".aui-searchbar-cancel").onclick = function() {
+        this.style.marginRight = "-" + this.offsetWidth + "px";
+        document.getElementById("search-input").value = '';
+        document.getElementById("search-input").blur();
+    }
+
+    var vm = new Vue({
+        el: '#bx',
+        data: {
+            userInfo: '',
+            cili: '',
+            douban:''
+        },
+        methods: {
+            getDoubanTop:function () {
+                var toast = new auiToast({});
+                toast.loading({
+                    title: "加载中",
+                    duration: 2000
+                })
+                api.ajax({
+                    url:'http://api.douban.com/v2/movie/in_theaters?start=0&count=12',
+                    method: 'get'
+                },function (ret,err) {
+                    if (ret) {
+                        vm.douban = ret.subjects;
+                        toast.hide();
+
+                    }else {
+                        toast.hide();
+                    }
+                })
+            },
+            doSearch: function() {
+                var searchValue = document.getElementById("search-input").value;
+                if (searchValue) {
+                    vm.getCili(searchValue)
+                }
+            },
+            getCili: function(searchValue) {
+                api.openWin({
+                    name: 'tools-list',
+                    url: './tools-list.html',
+                    pageParam: {
+                        name: searchValue
+                    }
+                });
+            }
+        }
+    })
+</script>
+
+</html>

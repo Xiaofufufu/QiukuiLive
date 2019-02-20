@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" type="text/css" href="../css/aui.css" />
+    <link rel="stylesheet" type="text/css" href="../css/aui-pull-refresh.css" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0" />
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>首页</title>
+    <style>
+        body {
+            background-color: rgba(0, 0, 0, 0);
+        }
+
+        .aui-bar-nav {
+            top: 0;
+            line-height: 2.25rem;
+            background: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0));
+            color: #ffffff;
+        }
+
+        .qunping {
+            margin-top: 140%;
+            margin-left: 80%;
+            position: absolute;
+            color: #fff;
+            padding: 0.3rem 0.8rem;
+            border: #fff solid 1px;
+        }
+
+        .qunping:active {
+            background: #fff;
+            color: #009688
+        }
+
+        .baidi {
+            height: 100%;
+            position: absolute;
+            width: 100%;
+        }
+
+        .config-body {
+            /*position: absolute;*/
+            /*bottom: 50%;*/
+            /*right: 0;*/
+        }
+
+        .config-body-right {}
+
+        .line-close {
+            line-height: 1rem;
+            padding: 0.3rem 0.35rem;
+            margin-right: 0.6rem;
+            margin-bottom: 0.4rem;
+            background: rgba(0, 0, 0, 0.2);
+            color: #fff;
+            border-radius: 50%;
+            font-size: 0.8rem;
+            position: absolute;
+            bottom: 0;
+            right: 0;
+        }
+
+        .line-open {
+            line-height: 1rem;
+            padding: 0.3rem 0.35rem;
+            margin-left: 0.6rem;
+            margin-bottom: 0.4rem;
+            background: rgba(0, 0, 0, 0.2);
+            color: #fff;
+            border-radius: 50%;
+            font-size: 0.8rem;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+        }
+
+        .line-open>i {
+            font-size: 1rem;
+        }
+
+        .line-close>i {
+            font-size: 1rem;
+        }
+
+        .line-icon {
+            position: absolute;
+            right: 0;
+            top: 40%;
+        }
+
+        .line-icon>ul>li {
+            margin-top: 2rem;
+        }
+
+        .line-icon i {
+            line-height: 1rem;
+            padding: 0.7rem 0.7rem;
+            margin-right: 0.6rem;
+            margin-bottom: 0.4rem;
+            color: #fff;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.2);
+            font-size: 0.8rem;
+        }
+
+        .line-icon i:active {
+            color: rgba(0, 0, 0, 0.2);
+            background: #fff;
+        }
+
+        .config-header {
+            position: absolute;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .zhubo-img {
+            width: 2.5rem;
+            display: inline-block;
+            float: left;
+            margin: 0.3rem 0.4rem;
+        }
+
+        .zhubo-img img {
+            border-radius: 50%;
+        }
+
+        .zhubo-title {
+            line-height: 2.5rem;
+            margin: 0.3rem 0.2rem;
+            float: left;
+            display: inline-block;
+            color: #fff;
+            max-width: 60%;
+        }
+
+        .config-text {
+            position: absolute;
+            bottom: 10%;
+            width: 70%;
+            max-height: 35%;
+            /*overflow: hidden;*/
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+
+        .config-text>ul {
+            max-height: 40%;
+        }
+
+        .config-text>ul>li {
+            margin: 0.3rem;
+            padding: 0.2rem 0.6rem;
+            background: rgba(0, 0, 0, 0.3);
+            color: #fff;
+            border-radius: 2%;
+            display: table;
+        }
+
+        .config-ul {
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+
+        canvas {
+            display: block;
+            position: absolute;
+            bottom: 100px;
+            right: -24px;
+            z-index: 20;
+            cursor: pointer;
+            -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+        }
+
+        .m {
+            width: 750px;
+            height: 1334px;
+            margin-left: auto;
+            margin-right: auto;
+            background: url(img/bg.jpg) no-repeat;
+            background-size: 100% 100%;
+        }
+
+        .journal-reward {
+            position: absolute;
+            bottom: 70px;
+            right: 20px;
+            height: 80px;
+            width: 80px;
+            display: block;
+            z-index: 21;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="aui-content aui-margin-b-15" id="bx">
+        <header class="aui-bar aui-bar-nav">
+            <a class="aui-pull-left aui-btn" v-on:click="clickClose()">
+                <span class="aui-iconfont aui-icon-left"></span>
+            </a>
+            <div class="aui-title">{{liveAddress.title|cleanStr}}</div>
+            <a class="aui-pull-right aui-btn" v-on:click="showPopup()">
+                <span class="aui-iconfont aui-icon-menu"></span>
+            </a>
+
+        </header>
+        <div class="aui-popup aui-popup-top-right" id="top-right" style="margin-top:2.2rem;">
+            <div class="aui-popup-arrow"></div>
+            <div class="aui-popup-content">
+                <ul class="aui-list aui-list-noborder">
+                    <li class="aui-list-item" v-on:click="pagedown()">
+                        <div class="aui-list-item-label-icon">
+                            <i class="aui-iconfont aui-icon-top aui-text-warning"></i>
+                        </div>
+                        <div class="aui-list-item-inner aui-list-item-middle">
+                            上一主播
+                        </div>
+                    </li>
+                    <li class="aui-list-item" v-on:click="collection()">
+                        <div class="aui-list-item-label-icon">
+                            <i class="aui-iconfont aui-icon-like aui-text-info"></i>
+                        </div>
+                        <div class="aui-list-item-inner">
+                            添加收藏
+                        </div>
+                    </li>
+                    <li class="aui-list-item" v-on:click="download()">
+                        <div class="aui-list-item-label-icon">
+                            <i class="aui-iconfont aui-icon-star aui-text-danger"></i>
+                        </div>
+                        <div class="aui-list-item-inner">
+                            添加下载
+                        </div>
+                    </li>
+                    <li class="aui-list-item" v-on:click="pagetop()">
+                        <div class="aui-list-item-label-icon">
+                            <i class="aui-iconfont aui-icon-down aui-text-danger"></i>
+                        </div>
+                        <div class="aui-list-item-inner">
+                            下一主播
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="" v-if="!quanping">
+            <!-- <div class="config-header" v-if="liveAddress">
+                <div class="zhubo-img">
+                    <img :src="liveAddress.img" alt="">
+                </div>
+                <div class="zhubo-title aui-ellipsis-1">
+                    {{liveAddress.title|cleanStr}}
+                </div>
+            </div> -->
+            <div class="config-body">
+                <div class="config-body-right" v-if="kongjian">
+                    <div class="line-icon">
+                        <ul>
+                            <li v-on:click="pagedown()"><i class="aui-iconfont aui-icon-top"></i></li>
+                            <li v-on:click="collection()"><i class="aui-iconfont aui-icon-like"></i></li>
+                            <li v-on:click="download()"><i class="aui-iconfont aui-icon-paper"></i></li>
+                            <li v-on:click="pagetop()"><i class="aui-iconfont aui-icon-down"></i></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="config-bottom">
+                    <div class="line-close" v-on:click="clickClose()">
+                        <i class="aui-iconfont aui-icon-close"></i>
+                    </div>
+                </div>
+                <div class="config-text" id="text">
+                    <ul class="config-ul">
+                        <li v-for="item in messge">{{item.content.text}}</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+<script type="text/javascript" src="../script/api.js"></script>
+<script type="text/javascript" src="../script/aui-toast.js"></script>
+<script type="text/javascript" src="../script/aui-pull-refresh.js"></script>
+<script type="text/javascript" src="../script/vue.min.js"></script>
+<script type="text/javascript" src="../script/SHA1.js"></script>
+<script type="text/javascript" src="../script/aui-popup.js"></script>
+<script type="text/javascript">
+    apiready = function() {
+        var kongjian = $api.getStorage('kongjian');
+        if (kongjian == 'false') {
+            vm.kongjian = false;
+        }
+        var pageParam = api.pageParam;
+        vm.pingtai = pageParam.pingtai;
+        vm.liveAddress = pageParam.liveAddress;
+        vm.liveList = pageParam.liveList;
+        vm.num = pageParam.num;
+        api.toast({
+            msg: '直播页面向右滑动去除控件！',
+            duration: 2000,
+            location: 'bottom'
+        });
+        // vm.getUservip();
+    }
+    toast = new auiToast({});
+    var vm = new Vue({
+        el: '#bx',
+        data: {
+            live: '',
+            pingtai: '',
+            quanping: false,
+            messge: [],
+            liveAddress: {},
+            abc: false,
+            liveList: [],
+            num: '',
+            kongjian:true
+
+        },
+        methods: {
+            showPopup: function() {
+                var popup = new auiPopup();
+                popup.show(document.getElementById("top-right"));
+            },
+            download: function() {
+                user = $api.getStorage('user');
+                if (user) {
+                    var nowTimeStr = Date.parse(new Date()) / 1000;
+                    if (user.isvip) {
+                        if (user.isvip > nowTimeStr) {
+                            // return true;
+                        } else if (user.isvip < nowTimeStr) {
+                            api.toast({
+                                msg: 'vip时间不足，请充值重试！',
+                                duration: 2000,
+                                location: 'bottom'
+                            });
+                            return false;
+                        }
+                    } else {
+                        api.toast({
+                            msg: '下载主播直播需要vip，请到金币商城购买vip权限',
+                            duration: 2000,
+                            location: 'bottom'
+                        });
+                        return false;
+                    }
+
+                } else {
+                    api.toast({
+                        msg: '此功能需要登陆！',
+                        duration: 2000,
+                        location: 'bottom'
+                    });
+                    return false;
+                }
+
+                var downloadManager = api.require('downloadManager');
+                downloadManager.enqueue({
+                    url: vm.liveAddress.address,
+                    cache: true,
+                    allowResume: true,
+                    title: vm.liveAddress.title,
+                    networkTypes: 'all'
+                }, function(ret, err) {
+                    if (ret) {
+                        api.toast({
+                            msg: '添加成功，可以去下载管理查看，此功能还在测试，暂不稳定',
+                            duration: 2000,
+                            location: 'bottom'
+                        });
+                    } else {
+                        // alert(JSON.stringify(err));
+                    }
+                });
+            },
+            isVip: function() {
+                user = $api.getStorage('user');
+                var vip = false;
+                if (user) {
+                    var nowTimeStr = Date.parse(new Date()) / 1000;
+                    if (user.isvip) {
+                        if (user.isvip > nowTimeStr) {
+                            return true;
+                        } else if (user.isvip < nowTimeStr) {
+                            api.toast({
+                                msg: 'vip时间不足，请充值重试！',
+                                duration: 2000,
+                                location: 'bottom'
+                            });
+                            return false;
+                        }
+                    } else {
+                        api.toast({
+                            msg: '请到金币商城购买vip权限',
+                            duration: 2000,
+                            location: 'bottom'
+                        });
+                        return false;
+                    }
+
+                } else {
+                    api.toast({
+                        msg: '此功能需要登陆！',
+                        duration: 2000,
+                        location: 'bottom'
+                    });
+                    return false;
+                }
+            },
+            pagedown: function() {
+
+                user = $api.getStorage('user');
+                if (user) {
+                    var nowTimeStr = Date.parse(new Date()) / 1000;
+                    if (user.isvip) {
+                        if (user.isvip > nowTimeStr) {
+                            // return true;
+                        } else if (user.isvip < nowTimeStr) {
+                            api.toast({
+                                msg: 'vip时间不足，请充值重试！',
+                                duration: 2000,
+                                location: 'bottom'
+                            });
+                            return false;
+                        }
+                    } else {
+                        api.toast({
+                            msg: '切换主播需要vip，请到金币商城购买vip权限',
+                            duration: 2000,
+                            location: 'bottom'
+                        });
+                        return false;
+                    }
+
+                } else {
+                    api.toast({
+                        msg: '此功能需要登陆！',
+                        duration: 2000,
+                        location: 'bottom'
+                    });
+                    return false;
+                }
+
+                api.toast({
+                    msg: '切换上一个主播',
+                    duration: 2000,
+                    location: 'bottom'
+                });
+
+                vm.num = vm.num - 1;
+                if (vm.num == -1) {
+                    vm.showDefault('first');
+                    return;
+                }
+                // return;
+                vm.liveAddress = vm.liveList[vm.num];
+                // var jsfun = vm.change('+ vm.liveAddress.address +')
+                api.execScript({
+                    script: 'vm.change("' + vm.liveAddress.address + '")'
+                });
+            },
+            pagetop: function() {
+
+                user = $api.getStorage('user');
+                var vip = false;
+                if (user) {
+                    var nowTimeStr = Date.parse(new Date()) / 1000;
+                    if (user.isvip) {
+                        if (user.isvip > nowTimeStr) {
+                            // return true;
+                        } else if (user.isvip < nowTimeStr) {
+                            api.toast({
+                                msg: 'vip时间不足，请充值重试！',
+                                duration: 2000,
+                                location: 'bottom'
+                            });
+                            return false;
+                        }
+                    } else {
+                        api.toast({
+                            msg: '切换主播需要vip，请到金币商城购买vip权限',
+                            duration: 2000,
+                            location: 'bottom'
+                        });
+                        return false;
+                    }
+
+                } else {
+                    api.toast({
+                        msg: '此功能需要登陆！',
+                        duration: 2000,
+                        location: 'bottom'
+                    });
+                    return false;
+                }
+
+                api.toast({
+                    msg: '切换下一个主播',
+                    duration: 2000,
+                    location: 'bottom'
+                });
+                vm.num = vm.num + 1;
+                if (vm.num > vm.liveList.length) {
+                    api.toast({
+                        msg: '已经是最后一个主播了！',
+                        duration: 2000,
+                        location: 'bottom'
+                    });
+                    return;
+                }
+                vm.liveAddress = vm.liveList[vm.num];
+                api.execScript({
+                    script: 'vm.change("' + vm.liveAddress.address + '")'
+                });
+
+            },
+            showDefault: function(type) {
+                switch (type) {
+                    case "isvip":
+                        toast.success({
+                            title: "您是尊贵的vip",
+                            duration: 2000
+                        });
+                        break;
+                    case "nologin":
+                        toast.fail({
+                            title: "请注册登录以后观看主播精彩表演！",
+                            duration: 2000
+                        });
+                        break;
+                    case "novip":
+                        toast.fail({
+                            title: "请充值vip之后观看主播精彩表演！",
+                            duration: 2000
+                        });
+                        break;
+                    case "first":
+                        toast.fail({
+                            title: "已经是第一个主播了！",
+                            duration: 2000
+                        });
+                        break;
+                    // case "custom":
+                    //     toast.custom({
+                    //         title: "免费试看中",
+                    //         html: '<i class="aui-iconfont aui-icon-laud"></i>',
+                    //         duration: 2000
+                    //     });
+                    //     break;
+                    // case "chongzhi":
+                    //     toast.custom({
+                    //         title: "免费次数用完了，请充值vip",
+                    //         html: '<i class="aui-iconfont aui-icon-laud"></i>',
+                    //         duration: 2000
+                    //     });
+                    //     break;
+
+                    case "loading":
+                        toast.loading({
+                            title: "加载中",
+                            duration: 2000
+                        }, function(ret) {
+                            console.log(ret);
+                            setTimeout(function() {
+                                toast.hide();
+                            }, 3000)
+                        });
+                        break;
+                    default:
+                        // statements_def
+                        break;
+                }
+            },
+            getUservip: function() {
+                toast = new auiToast({})
+
+                user = $api.getStorage('user');
+                if (user) {
+                    var nowTimeStr = Date.parse(new Date()) / 1000;
+                    if (user.isvip) {
+                        if (user.isvip > nowTimeStr) {
+                            vm.showDefault('isvip')
+                        } else if (user.isvip < nowTimeStr) {
+                            vm.showDefault('novip')
+                            var jsfun = "vm.configAli('pause')";
+                            api.execScript({
+                                name: 'zhibo',
+                                script: jsfun
+                            });
+                        }
+                    } else {
+                        var cishu = $api.getStorage("xiuxiu");
+                        if (cishu) {} else {
+                            cishu = 0;
+                        }
+                        if (cishu > 6) {
+                            vm.showDefault('chongzhi')
+                            var jsfun = "vm.configAli('pause')";
+                            api.execScript({
+                                script: jsfun
+                            });
+                            return;
+                        }
+                        newcishu = parseInt(cishu) + 1;
+                        // $api.setStorage(newcishu, 'xiuxiu');
+
+                        vm.showDefault('custom');
+                        setTimeout(function() {
+                            vm.showDefault('novip');
+                            var jsfun = "vm.configAli('pause')";
+                            api.execScript({
+                                script: jsfun
+                            });
+
+                        }, 3000)
+                    }
+                } else {
+                    setTimeout(function() {
+                        vm.showDefault('nologin');
+                        var jsfun = "vm.configAli('pause')";
+                        api.execScript({
+                            script: jsfun
+                        });
+                    }, 1000)
+
+                }
+            },
+
+            clickClose: function() {
+                api.closeWin();
+                api.setFullScreen({
+                    fullScreen: false
+                });
+            },
+
+            isLogin: function() {
+                var user = $api.getStorage('user');
+                if (user) {
+                    return true;
+                } else {
+                    return false;
+                }
+
+            },
+            collection: function() {
+                if (vm.abc) {
+                    toast = new auiToast({});
+                    toast.fail({
+                        title: "已经收藏过了",
+                        duration: 2000
+                    });
+                    return;
+                }
+                vm.abc = true;
+                setTimeout(function() {   
+                    vm.abc = false;
+                }, 3000);
+                if (vm.isLogin()) {
+                    user = $api.getStorage('user');
+                    var zhubo = {};
+                    zhubo.pingtai = vm.pingtai;
+                    zhubo.address = vm.liveAddress.address;
+                    zhubo.img = vm.liveAddress.img;
+                    zhubo.title = vm.liveAddress.title;
+                    console.log(JSON.stringify(zhubo));
+                    collection = $api.getStorage('collection');
+                    if (!collection) {
+                        collection = [];
+                    }
+                    if (collection.length >= user.cnum) {
+                        toast = new auiToast({});
+                        toast.fail({
+                            title: "收藏已满，取消部分后可继续添加",
+                            duration: 2000
+                        });
+                        return;
+                    }
+
+
+                    var relation = api.require('relation');
+                    relation.insert({
+                        class: 'user',
+                        id: user.id,
+                        column: 'collection',
+                        value: {
+                            pingtai: zhubo.pingtai,
+                            address: zhubo.address,
+                            img: zhubo.img,
+                            title: zhubo.title
+                        }
+                    }, function(ret, err) {
+                        if (ret) {
+                            zhubo.id = ret.id;
+                            collection.push(zhubo);
+                            var relation = api.require('relation');
+                            relation.findAll({
+                                class: 'user',
+                                id: user.id,
+                                column: 'collection'
+                            }, function(ret, err) {
+                                if (ret) {
+                                    console.log(JSON.stringify(ret));
+                                    $api.setStorage('collection', ret);
+                                    api.sendEvent({
+                                        name: 'addCollection'
+                                    });
+                                    var toast = new auiToast({});
+                                    toast.success({
+                                        title: "收藏成功",
+                                        duration: 2000
+                                    });
+                                } else {
+                                    alert(JSON.stringify(err));
+                                }
+                            });
+                        }
+                    });
+                } else {
+                    toast.fail({
+                        title: "请登录后使用收藏功能！",
+                        duration: 2000
+                    });
+                    return;
+                }
+
+            }
+        },
+        filters: {
+            cleanStr: function(value) {
+                if (!value) return '';
+                for (var i = 0; i < 3; i++) {
+                    // value = decodeURI(value);
+                }
+                var items = value.split("%3F");
+                var value = items.join("");
+                return value;
+            }
+        }
+    })
+</script>
+
+</html>

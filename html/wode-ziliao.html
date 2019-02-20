@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="../css/aui.css" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0" />
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>首页</title>
+    <style>
+    .img{
+        height: 3rem;
+        margin: 0.6rem 0;
+    }
+    </style>
+</head>
+
+<body>
+    <header class="aui-bar aui-bar-nav aui-bar-light" style="padding-top:25px;">
+        <a class="aui-pull-left" onclick="api.closeWin();" tapmode>
+            <span class="aui-iconfont aui-icon-left"></span>
+        </a>
+        <div class="aui-title" id="title">修改资料</div>
+
+    </header>
+
+    <div class="aui-content aui-margin-b-15" id="bx">
+        <ul class="aui-list aui-list-in">
+            <li class="aui-list-item">
+                <div class="aui-list-item-inner" v-on:click="selcetImg()">
+                    <div class="aui-list-item-title">头像</div>
+                    <div class="aui-list-item-right ">
+                        <img :src="userInfo.img.url+'?imageView2/1/w/100/h/100'" alt="" class="aui-img-round img" v-if="userInfo.img">
+                        <img src="../icon/icon150x150.png" alt="" class="aui-img-round img" v-else>
+                    </div>
+                </div>
+            </li>
+            <li class="aui-list-item" v-on:click="configNikename">
+                <div class="aui-list-item-inner">
+                    <div class="aui-list-item-title">昵称</div>
+                    <div class="aui-list-item-right">
+                        {{userInfo.nikename}}
+                    </div>
+                </div>
+            </li>
+        </ul>
+    </div>
+
+</body>
+<script type="text/javascript" src="../script/api.js"></script>
+<script type="text/javascript" src="../script/aui-toast.js"></script>
+<script type="text/javascript" src="../script/vue.min.js"></script>
+<script type="text/javascript" src="../script/aui-dialog.js"></script>
+<script type="text/javascript">
+    apiready = function() {
+        vm.getUserInfo();
+    }
+
+    var vm = new Vue({
+        el: '#bx',
+        data: {
+            userInfo:'',
+            image:''
+        },
+        methods: {
+            selcetImg:function () {
+                api.getPicture({
+                    sourceType: 'library',
+                    encodingType: 'jpg',
+                    mediaValue: 'pic',
+                    destinationType: 'url',
+                    allowEdit: true,
+                    saveToPhotoAlbum: false
+                }, function(ret, err) {
+                    console.log(JSON.stringify(ret));
+                    if (ret.data) {
+                        var toast = new auiToast({});
+                        toast.loading({
+                            title: "图像上传中！",
+                            duration: 2000
+                        });
+                        var model = api.require('model');
+                        model.uploadFile({
+                            data: {
+                                file: {
+                                    url: ret.data
+                                }
+                            }
+                        }, function(ret, err){
+                            if( ret ){
+                                console.log(JSON.stringify(ret));
+                                vm.image = {
+                                    url: ret.url,
+                                    name: ret.name,
+                                    id: ret.id
+                                }
+                                var model = api.require('model');
+                                model.updateById({
+                                    class: 'user',
+                                    id: vm.userInfo.id,
+                                    value: {
+                                        img: vm.image
+                                    }
+                                }, function(ret, err){
+                                    if( ret ){
+                                        toast.hide();
+                                        toast.success({
+                                            title: "上传成功！",
+                                            duration: 2000
+                                        });
+                                        vm.userInfo = ret;
+                                        $api.setStorage('user', ret);
+                                        api.sendEvent({
+                                            name: 'loginOn'
+                                        });
+                                    }else{
+                                         alert( JSON.stringify( err ) );
+                                    }
+                                });
+                            }else{
+                                 alert( JSON.stringify( err ) );
+                            }
+                        });
+                    } else {
+                        var toast = new auiToast({})
+                        toast.fail({
+                            title: "上传取消",
+                            duration: 2000
+                        });
+                    }
+                });
+            },
+            configNikename:function () {
+                var dialog = new auiDialog({});
+                dialog.prompt({
+                    title:"弹出提示",
+                    text:vm.userInfo.nikename,
+                    buttons:['取消','确定']
+                },function(ret){
+                    if(ret.buttonIndex == 2){
+                        var model = api.require("model");
+
+                        model.updateById({
+                            class: "user",
+                            id: vm.userInfo.id,
+                            value: {
+                                "nikename":ret.text
+                            }
+                        }, function(ret, err){
+                            if (ret) {
+
+                                userInfo = ret;
+                                if(userInfo.img){
+
+                                }else {
+                                    userInfo.img = {
+                                        url:'../icon/icon.png'
+                                    }
+                                }
+                                $api.setStorage('user', ret);
+                                vm.userInfo = userInfo;
+                                api.sendEvent({
+                                    name: 'loginOn'
+                                });
+                            }
+                        });
+                    }
+                })
+
+            },
+            getUserInfo:function () {
+                userInfo = $api.getStorage('user');
+                if(userInfo.img){
+
+                }else {
+                    userInfo.img = {
+                        url:'../icon/icon.png'
+                    }
+                }
+                vm.userInfo = userInfo;
+            },
+        }
+
+    });
+</script>
+
+</html>

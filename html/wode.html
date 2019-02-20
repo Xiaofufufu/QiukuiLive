@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" type="text/css" href="../css/aui.css" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0" />
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>首页</title>
+    <style>
+        .header {
+            background: #fff;
+        }
+
+        .header-top {
+            height: 6rem;
+            border-bottom: 1px solid #ebebeb;
+            /*margin: -0.8rem;*/
+            padding: 0.8rem;
+        }
+
+        .header-top-left {
+            height: 100%;
+            float: left;
+        }
+
+        .header-top-left img {
+            height: 100%;
+            border-radius: 50%;
+        }
+
+        .header-top-center {
+            padding-left: 0.4rem;
+            padding-top: 1rem;
+            width: 50%;
+            float: left;
+        }
+
+        .header-top-name {
+            line-height: 1.4rem;
+            font-weight: bold;
+        }
+
+        .header-top-vip {
+            line-height: 1.4rem;
+            color: #ccc;
+            font-size: 0.5rem;
+        }
+
+        .header-top-right {
+            float: right;
+        }
+
+        .header-buttom {
+            text-align: center;
+            display: flex;
+            flex-direction: row;
+            padding: 0.5rem;
+        }
+
+        .header-buttom:first-child {
+            border-right: 1px solid #ebebeb;
+        }
+
+        .header-buttom:last-child {
+            border-right: 1px solid #ebebeb;
+        }
+
+        .header-buttom-ch {
+            flex: 1;
+            border-right: 1px solid #ebebeb;
+        }
+
+        .header-buttom-ch:after {
+            content: " ";
+            width: 100%;
+            height: 1px;
+            transform: scaleY(.5);
+        }
+
+        .last {
+            border-right: 0px solid #fff;
+        }
+
+        .header-top-button {
+            margin: 1.2rem auto;
+        }
+
+        .header-top-zanzhu {
+            line-height: 1.4rem;
+            color: #e51c23;
+            font-size: 0.8rem;
+        }
+
+        .header-top-tequan {
+            line-height: 1.4rem;
+            color: #e51c23;
+            font-size: 0.6rem;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="aui-bar aui-bar-nav aui-bar-light" style="padding-top:25px;">
+        个人中心
+    </header>
+
+
+    <div class="aui-content aui-margin-b-15" id="bx">
+        <div class="header">
+            <div class="header-top" v-if="userInfo" v-on:click="goConfig()">
+                <div class="header-top-left">
+                    <img :src="userInfo.img.url+'?imageView2/1/w/200/h/200'" alt="" class="aui-img-round img" v-if="userInfo.img.url">
+                    <img src="../icon/icon150x150.png" alt="" class="aui-img-round img" v-else v-on:click="goConfig()">
+                </div>
+                <div class="header-top-center">
+                    <div class="header-top-name" v-if="!userInfo.nikename">
+                        {{userInfo.username}}
+                    </div>
+                    <div class="header-top-name" v-else>
+                        {{userInfo.nikename}}
+                    </div>
+                    <div class="header-top-tequan" v-if="userInfo.isvip">
+                        特权：{{dataStr(userInfo.isvip)}}
+                    </div>
+                    <div class="header-top-zanzhu" v-else>
+                        普通会员
+                    </div>
+
+                </div>
+
+            </div>
+            <div class="header-top" v-else v-on:click="goLogin()">
+                <p>
+                    <div class="aui-btn aui-btn-info aui-btn-block header-top-button">登录</div>
+                </p>
+            </div>
+            <div class="header-buttom">
+                <div class="header-buttom-ch" v-on:click="myCollection()">
+                    <p>{{collection.length}}</p>
+                    <p>收藏</p>
+                </div>
+                <div class="header-buttom-ch last">
+                    <p v-if="userInfo.coin">{{userInfo.coin}}</p>
+                    <p v-else>0</p>
+                    <p>金币</p>
+                </div>
+            </div>
+        </div>
+        <br>
+        <ul class="aui-list aui-list-in">
+
+
+            <li class="aui-list-item aui-list-item-middle" v-on:click="vm.hongBao()">
+                <div class="aui-list-item-inner aui-list-item-arrow">
+                    <div class="aui-list-item-title">领取支付宝红包</div>
+                    <div class="aui-list-item-right" v-if="dot2">
+                        <div class="aui-dot" style="position:relative;top:0; right:0"></div>
+                    </div>
+                </div>
+            </li>
+
+            <li class="aui-list-item aui-list-item-middle" v-on:click="vm.coinstore()">
+                <div class="aui-list-item-inner aui-list-item-arrow">
+                    <div class="aui-list-item-title">金币商城</div>
+                    <div class="aui-list-item-right" v-if="dot1">
+                        <div class="aui-dot" style="position:relative;top:0; right:0"></div>
+                    </div>
+                </div>
+            </li>
+            <li class="aui-list-item aui-list-item-middle" v-on:click="vm.huiyuan()">
+                <div class="aui-list-item-inner aui-list-item-arrow">
+                    <div class="aui-list-item-title">会员充值</div>
+                </div>
+            </li>
+            <li class="aui-list-item aui-list-item-middle" v-on:click="vm.download()">
+                <div class="aui-list-item-inner aui-list-item-arrow">
+                    <div class="aui-list-item-title">下载管理</div>
+                </div>
+            </li>
+        </ul>
+        <br>
+        <ul class="aui-list aui-list-in">
+
+            <li class="aui-list-item aui-list-item-middle" v-on:click="vm.fenxiang()">
+                <div class="aui-list-item-inner aui-list-item-arrow">
+                    <div class="aui-list-item-title">分享给好友</div>
+                </div>
+            </li>
+            <li class="aui-list-item" v-on:click="vm.shezhi()">
+                <div class="aui-list-item-inner aui-list-item-arrow">
+                    <div class="aui-list-item-title">设置</div>
+                </div>
+            </li>
+
+            <li class="aui-list-item" v-on:click="vm.guanyu()">
+                <div class="aui-list-item-inner aui-list-item-arrow">
+                    <div class="aui-list-item-title">关于</div>
+                </div>
+            </li>
+        </ul>
+    </div>
+
+</body>
+<script type="text/javascript" src="../script/api.js"></script>
+<script type="text/javascript" src="../script/aui-toast.js"></script>
+<script type="text/javascript" src="../script/vue.min.js"></script>
+<script type="text/javascript">
+    apiready = function() {
+        vm.listenLoginOn();
+        vm.getUserInfo();
+        vm.listenLoginOut();
+        vm.listenAddCollection();
+    }
+    var vm = new Vue({
+        el: '#bx',
+        data: {
+            userInfo: '',
+            collection: [],
+            dot1: true,
+            dot2: true
+        },
+        methods: {
+            download: function() {
+                var downloadManager = api.require('downloadManager');
+
+                downloadManager.openManagerView({
+                    title: '下载管理'
+                }, function(ret, err) {
+                    if (ret) {
+                        // alert(JSON.stringify(ret));
+                    } else {
+                        // alert(JSON.stringify(err));
+                    }
+                });
+            },
+            fenxiang: function() {
+                var sharedModule = api.require('shareAction');
+                sharedModule.share({
+                    text: '我发现一个超刺激的直播app，在浏览器中打开链接下载https://www.lanzous.com/',
+                    type: 'text'
+                });
+
+            },
+            huiyuan: function() {
+                api.openWin({
+                    name: 'wode-vip',
+                    url: './wode-vip.html',
+                    allowEdit: true,
+                    pageParam: {
+                        name: 'test'
+                    }
+                });
+            },
+            coinstore: function() {
+                vm.dot1 = false;
+                api.openWin({
+                    name: 'wode-coinstore',
+                    url: './wode-coinstore.html',
+                    pageParam: {
+                        name: 'test'
+                    }
+                });
+            },
+            dataStr: function(timestamp) {
+                var d = new Date(timestamp * 1000); //根据时间戳生成的时间对象
+                var date = (d.getFullYear()) + "-" +
+                    (d.getMonth() + 1) + "-" +
+                    (d.getDate()) + " " +
+                    (d.getHours()) + ":" +
+                    (d.getMinutes()) + ":" +
+                    (d.getSeconds());
+                return date;
+            },
+            goConfig: function() {
+                api.openWin({
+                    name: 'wode-ziliao',
+                    url: './wode-ziliao.html',
+                    pageParam: {
+                        name: 'test'
+                    }
+                });
+            },
+            listenAddCollection: function() {
+                api.addEventListener({
+                    name: 'addCollection'
+                }, function(ret, err) {
+                    vm.getCollection();
+                });
+            },
+            goLogin: function() {
+                api.openWin({
+                    name: 'login',
+                    url: './login.html',
+                    pageParam: {
+                        name: 'login'
+                    }
+                });
+            },
+            listenLoginOn: function() {
+                api.addEventListener({
+                    name: 'loginOn'
+                }, function(ret, err) {
+                    if (ret) {
+                        vm.getUserInfo()
+                    }
+
+                });
+            },
+            getUserInfo: function() {
+                userInfo = $api.getStorage('user');
+                if (userInfo) {
+                    if (userInfo.img) {
+
+                    } else {
+                        userInfo.img = {
+                            url: '../icon/icon.png'
+                        }
+                    }
+                    vm.userInfo = userInfo;
+                    vm.getCollection(vm.userInfo.id)
+                }
+
+            },
+            hongBao: function() {
+                vm.dot2 = false;
+                api.openWin({
+                    name: 'hongbao',
+                    url: 'https://qr.alipay.com/c1x039284fivmgsavhgdw37',
+                    pageParam: {
+                        name: 'test'
+                    }
+                });
+            },
+            shezhi: function() {
+                api.openWin({
+                    name: 'wode-shezhi',
+                    url: './wode-shezhi.html',
+                    pageParam: {
+                        name: 'test'
+                    }
+                });
+            },
+            isLogin: function() {
+                var user = $api.getStorage('user');
+                if (user) {
+                    return true;
+                } else {
+                    return false;
+                }
+            },
+            getCollection: function(userId) {
+                collection = $api.getStorage('collection');
+                if (collection) {
+
+                } else {
+                    collection = [];
+                }
+                vm.collection = collection;
+            },
+            myCollection: function() {
+                if (vm.isLogin()) {
+                    api.openWin({
+                        name: 'wode-shoucang',
+                        url: './wode-shoucang.html',
+                        pageParam: {
+                            name: 'test'
+                        }
+                    });
+                } else {
+                    toast = new auiToast({});
+                    toast.fail({
+                        title: "请登录后使用收藏功能！",
+                        duration: 2000
+                    });
+                    return;
+                }
+            },
+            listenLoginOut: function() {
+                api.addEventListener({
+                    name: 'loginOut'
+                }, function(ret, err) {
+                    console.log(JSON.stringify(ret));
+                    vm.userInfo = '';
+                    vm.collection = [];
+                });
+            },
+            guanyu: function() {
+                api.openWin({
+                    name: 'wode-about',
+                    url: './wode-about.html',
+                    pageParam: {
+                        name: 'test'
+                    }
+                });
+            },
+            myCoin: function() {
+                api.openWin({
+                    name: 'wode-mycoin',
+                    url: './wode-mycoin.html',
+                    pageParam: {
+                        name: 'test'
+                    }
+                });
+
+            }
+        }
+    });
+</script>
+
+</html>

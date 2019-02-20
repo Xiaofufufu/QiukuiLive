@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="../css/aui.css" />
+    <link rel="stylesheet" type="text/css" href="../css/aui-pull-refresh.css" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0" />
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>首页</title>
+    <style>
+        .top {
+            position: fixed;
+            top: 0;
+            z-index: 1199;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="aui-content aui-margin-b-15" id="bx">
+        <header class="aui-bar aui-bar-nav aui-bar-light top" style="padding-top:25px;">
+            <a class="aui-pull-left" onclick="api.closeWin();" tapmode>
+                <span class="aui-iconfont aui-icon-left"></span>
+            </a>
+            <div class="aui-title " id="title">搜索结果</div>
+
+        </header>
+        <ul class="aui-list aui-list-in" v-if="cili" style="margin-top:70px">
+            <li class="aui-list-item" v-for="item in cili" v-on:click="copyTo(item)">
+                <div class="aui-list-item-inner">
+                    <div class="aui-list-item-title aui-ellipsis-1">{{item.name}}</div>
+                </div>
+            </li>
+        </ul>
+        <div class="" v-if="ziyuan" style="margin-top:70px">
+            搜索结果为空，如果搜索的是新上映的电影，证明网络上暂时没有资源，请更换关键词查找其他资源
+        </div>
+    </div>
+</body>
+
+<script type="text/javascript" src="../script/api.js"></script>
+<script type="text/javascript" src="../script/aui-toast.js"></script>
+<script type="text/javascript" src="../script/aui-pull-refresh.js"></script>
+<script type="text/javascript" src="../script/vue.min.js"></script>
+<script type="text/javascript">
+    apiready = function() {
+        vm.getCili();
+    }
+
+    var vm = new Vue({
+        el: '#bx',
+        data: {
+            userInfo: '',
+            cili: '',
+            douban: '',
+            ziyuan:'',
+            title:''
+        },
+        methods: {
+            getCili: function(searchValue) {
+                var pageParam = api.pageParam;
+                searchValue = pageParam.name;
+                vm.title = pageParam.name;
+                var toast = new auiToast({});
+                toast.loading({
+                    title: "加载中",
+                    duration: 2000
+                })
+                api.ajax({
+                    url: 'https://api.kuaisohezi.com/search?keyword=' + searchValue + '&start=0&count=60',
+                    method: 'get'
+                }, function(ret, err) {
+                    if (ret) {
+                        toast.hide();
+                        vm.cili = ret.result.items;
+                        if (vm.cili.length == 0) {
+                            vm.ziyuan = true;
+                        }
+                        // api.alert({
+                        //     msg: JSON.stringify(ret)
+                        // });
+                    } else {
+                        api.alert({
+                            msg: JSON.stringify(err)
+                        });
+                    }
+                });
+            },
+            copyTo: function(item) {
+                var ma = 'magnet:?xt=urn:btih:' + item.info_hash;
+                var clipBoard = api.require('clipBoard');
+                clipBoard.set({
+                    value: ma
+                }, function(ret, err) {
+                    if (ret) {
+                        // alert(JSON.stringify(ret));
+                        api.toast({
+                            msg: '复制成功',
+                            duration: 2000,
+                            location: 'bottom'
+                        });
+                    } else {
+                        //  alert(JSON.stringify(err));
+                        api.toast({
+                            msg: '未知错误',
+                            duration: 2000,
+                            location: 'bottom'
+                        });
+                    }
+                });
+
+                api.actionSheet({
+                    title: '磁力链接已复制到剪切板',
+                    cancelTitle: '取消',
+                    buttons: ['在迅雷中打开','打开磁力播放器','下载磁力播放器']
+                }, function(ret, err) {
+                    var index = ret.buttonIndex;
+                    if (index == 1) {
+                        api.openApp({
+                            androidPkg: 'com.xunlei.downloadprovider',
+                            mimeType: 'text/html',
+                            uri: 'https://mobile.xunlei.com/'
+                        }, function(ret, err) {
+                            if (ret) {
+                                //  alert(JSON.stringify(ret));
+                            } else {
+                                api.toast({
+                                    msg: '你没有安装迅雷',
+                                    duration: 2000,
+                                    location: 'bottom'
+                                });
+                            }
+                        });
+                    } else if (index == 2) {
+                        api.openApp({
+                            androidPkg: 'com.iiplayer.sunplayer',
+                            mimeType: 'text/html',
+                            uri: ma
+                        }, function(ret, err) {
+                            if (ret) {
+                                // alert(JSON.stringify(ret));
+                            } else {
+                                api.toast({
+                                    msg: '你没有安装播放器',
+                                    duration: 2000,
+                                    location: 'bottom'
+                                });
+                            }
+                        });
+                    }else if (index ==3) {
+                        api.openApp({
+                            androidPkg: 'android.intent.action.VIEW',
+                            mimeType: 'text/html',
+                            uri: 'https://www.lanzous.com/b346905/'
+                        }, function(ret, err) {
+                            if (ret) {
+                                api.toast({
+                                    msg: '下载安装',
+                                    duration: 2000,
+                                    location: 'bottom'
+                                });
+
+                            } else {
+                                // alert(JSON.stringify(err));
+                            }
+                        });
+                    }
+                });
+            }
+        }
+    })
+</script>
+
+</html>

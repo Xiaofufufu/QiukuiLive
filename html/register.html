@@ -1,0 +1,140 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0" />
+    <title>会员注册</title>
+    <link rel="stylesheet" type="text/css" href="../css/aui-win.css" />
+    <link rel="stylesheet" type="text/css" href="../css/aui.css" />
+</head>
+<style>
+    body {
+        background: #fff;
+    }
+
+    .form {
+        width: 90%;
+        margin: 0 auto;
+        margin-top: 40px;
+    }
+    .p {
+        margin-top: 20px;
+    }
+
+    .sms {
+        width: 60%;
+    }
+</style>
+
+<body>
+    <header class="aui-bar aui-bar-nav aui-bar-light" style="padding-top:25px;">
+        <a class="aui-pull-left">
+            <span class="aui-iconfont aui-icon-left" onclick="api.closeWin();"></span>
+        </a>
+        <div class="aui-title">注册</div>
+    </header>
+
+
+    <div class="form" id="box">
+        <ul class="aui-list aui-form-list">
+
+            <li class="aui-list-item">
+                <div class="aui-list-item-inner">
+                    <div class="aui-list-item-label">
+                        手机号
+                    </div>
+                    <div class="aui-list-item-input">
+                        <input type="number" v-model="username" placeholder="请输入手机号">
+                    </div>
+                </div>
+            </li>
+
+            <li class="aui-list-item">
+                <div class="aui-list-item-inner">
+                    <div class="aui-list-item-label">
+                        密码
+                    </div>
+                    <div class="aui-list-item-input">
+                        <input type="password" v-model="password" placeholder="设置您的登陆密码">
+                    </div>
+                </div>
+            </li>
+        </ul>
+        <p class="p">
+            <div class="aui-btn aui-btn-block" onclick="vm.verify()">注 册</div>
+        </p>
+    </div>
+
+</body>
+<script type="text/javascript" src="../script/api.js"></script>
+<script type="text/javascript" src="../script/vue.min.js"></script>
+<script type="text/javascript" src="../script/aui-toast.js"></script>
+<script type="text/javascript">
+    apiready = function() {
+
+    }
+
+    var vm = new Vue({
+        el: '#box',
+        data: {
+            username: '',
+            password: ''
+        },
+        methods: {
+            verify: function() {
+                api.showProgress({
+                    title: '注册中...',
+                    modal: false
+                });
+                if (vm.username.length == 11 && vm.password.length >= 6) {
+                    var model = api.require('model');
+                    model.insert({
+                        class: 'user',
+                        value: {
+                            username: vm.username,
+                            password: vm.password,
+                            mobile: vm.username,
+                            coin:'0',
+                            cnum:'3'
+                        }
+                    }, function(ret, err) {
+                        if (ret) {
+                            api.hideProgress();
+                            api.sendEvent({
+                                name: 'register',
+                                extra: {
+                                    username: vm.username,
+                                    password: vm.password
+                                }
+                            });
+                            api.toast({
+                                msg: '注册成功',
+                                duration: 2000,
+                                location: 'bottom'
+                            });
+                            api.closeWin();
+                            //  alert( JSON.stringify( ret ) );
+                        } else {
+                            //  alert( JSON.stringify( err ) );
+                            if (err.stayus == '202') {
+                                api.toast({
+                                    msg: '您的手机号已被注册！',
+                                    duration: 2000,
+                                    location: 'bottom'
+                                });
+                            }
+                            api.hideProgress();
+                        }
+                    });
+                } else {
+                    api.alert({
+                        msg: '手机号或密码格式不正确，密码长度不足六位！'
+                    });
+                }
+                api.hideProgress();
+            }
+        }
+    })
+</script>
+
+</html>

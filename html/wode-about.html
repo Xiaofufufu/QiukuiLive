@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="../css/aui.css" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0" />
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>首页</title>
+    <style>
+        .img {
+            height: 6rem;
+            margin: 2rem auto 1rem auto;
+            border-radius: 20%;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="aui-bar aui-bar-nav aui-bar-light" style="padding-top:25px;">
+        <a class="aui-pull-left" onclick="api.closeWin();" tapmode>
+            <span class="aui-iconfont aui-icon-left"></span>
+        </a>
+        <div class="aui-title" id="title">关于</div>
+
+    </header>
+
+
+    <div class="aui-content aui-margin-b-15" id="bx">
+        <img src="../icon/icon150x150.png" alt="" class="img">
+        <p class="aui-font-size-18 aui-text-center">秋葵聚合直播：{{appVersion}}</p>
+        <ul class="aui-list aui-list-in aui-margin-t-10">
+            <li class="aui-list-item aui-list-item-middle" v-on:click="vm.openTencentQ()">
+                <div class="aui-list-item-inner aui-list-item-arrow">
+                    <div class="aui-list-item-title">代理&广告请联系</div>
+                </div>
+            </li>
+        </ul>
+    </div>
+</body>
+<script type="text/javascript" src="../script/api.js"></script>
+<script type="text/javascript" src="../script/aui-toast.js"></script>
+<script type="text/javascript" src="../script/vue.min.js"></script>
+<script type="text/javascript" src="../script/aui-dialog.js"></script>
+<script type="text/javascript">
+    apiready = function() {
+        vm.getUserInfo()
+    }
+
+    var vm = new Vue({
+        el: '#bx',
+        data: {
+            userInfo: '',
+            appVersion: ''
+        },
+        methods: {
+            getUserInfo: function() {
+                vm.userInfo = $api.getStorage('user');
+                vm.appVersion = api.appVersion;
+            },
+            rizhi:function () {
+                api.openWin({
+                    name: 'rizhi',
+                    url: 'http://isee.la/start-page.html',
+                    pageParam: {
+                        name: 'test'
+                    }
+                });
+            },
+            openTencentQ:function () {
+                api.openWin({
+                    name: 'qqq',
+                    url: 'http://sighttp.qq.com/',
+                    pageParam: {
+                        name: 'test'
+                    }
+                });
+            },
+            openTencent:function () {
+                api.openWin({
+                    name: 'qqq',
+                    url: 'https://jq.qq.com/',
+                    pageParam: {
+                        name: 'test'
+                    }
+                });
+            },
+            baijin:function () {
+                api.openWin({
+                    name: 'wode-baijin',
+                    url: './wode-baijin.html',
+                    pageParam: {
+                        name: 'test'
+                    }
+                });
+            },
+            checkUpdate:function () {
+                var mam = api.require('mam');
+                mam.checkUpdate(function( ret, err ){
+                    if (ret) {
+                        if(ret.result.update){
+                            api.confirm({
+                                title: '检测到有新版本，版本号：'+ret.result.version,
+                                msg: ret.result.updateTip,
+                                buttons: ['确定', '取消']
+                            }, function(ret, err) {
+                                var index = ret.buttonIndex;
+                                if (index == 1) {
+                                    api.rebootApp();
+                                }
+                            });
+                        }else {
+                            alert('已经是最新版本！')
+                        }
+                    } else{
+                        alert( '未获取到信息，请检查网络' );
+                    }
+                });
+            },
+
+        }
+    });
+</script>
+
+</html>

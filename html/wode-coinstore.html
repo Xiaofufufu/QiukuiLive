@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" type="text/css" href="../css/aui.css" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0" />
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>首页</title>
+    <style>
+        span {
+            color: #e51c23;
+            font-weight: bold;
+        }
+
+        .mycoin {
+            margin-top: 0.2rem;
+            padding-left: 0.6rem;
+            background-color: #fff;
+            line-height: 2rem;
+        }
+
+        .chongzhi {
+            margin-top: 0.6rem;
+            padding-top: 0.6rem;
+            background-color: #fff;
+            padding-left: 1rem;
+            padding-right: 1rem;
+            height: 100%;
+            background-color: #FFF;
+            overflow: hidden;
+        }
+
+        .chongzhi .input {
+            margin: 1.4rem auto;
+        }
+
+        .chongzhi>h3>span {
+            padding-left: 0.5rem;
+            font-size: 0.6rem;
+            color: #5f5f5f;
+        }
+
+        .register-left {
+            float: left;
+            height: 2rem;
+            line-height: 2rem;
+            color: #e51c23;
+            font-weight: bold;
+        }
+
+        .register-right {
+            float: right;
+            height: 2rem;
+            line-height: 2rem;
+            color: #e51c23;
+            font-weight: bold;
+        }
+
+        .clear {
+            clear: both;
+            margin-bottom: 0.6rem;
+        }
+
+        .btn {
+            margin-top: 4rem;
+        }
+
+        .aui-grid [class*=aui-col-] {
+            padding: 0.4rem 0.6rem;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="aui-bar aui-bar-nav aui-bar-light" style="padding-top:25px;">
+        <a class="aui-pull-left" onclick="api.closeWin();" tapmode>
+            <span class="aui-iconfont aui-icon-left"></span>
+        </a>
+        <div class="aui-title" id="title">金币商城</div>
+
+    </header>
+    <div class="aui-tab" id="tab">
+        <div class="aui-tab-item aui-active">金币兑换</div>
+        <div class="aui-tab-item">金币充值</div>
+    </div>
+
+    <div class="aui-content aui-margin-b-15" id="bx">
+        <div class="mycoin">
+            我的金币 <span>{{userInfo.coin}}</span>
+        </div>
+        <!-- <div class="chongzhi" v-if="windos">
+            <h3>我的会员 <span v-if='userInfo.isvip'>{{dataStr(userInfo.isvip)}}</span><span v-else>免费会员</span></h3>
+            <div class="aui-content aui-margin-b-15">
+                <ul class="aui-list aui-form-list" style="margin:0.6rem 0">
+                    <li class="aui-list-item">
+                        <div class="aui-list-item-inner">
+                            <div class="aui-list-item-label">
+                                会员天数
+                            </div>
+                            <div class="aui-list-item-input" style="min-height:4rem;padding:0.6rem 0;">
+                                <label><input class="aui-radio" type="radio" value="30" v-model="month"> 30天会员</label>
+                                <label><input class="aui-radio" type="radio" value="90" v-model="month"> 90天会员</label>
+                                <br>
+                                <br>
+                                <label><input class="aui-radio" type="radio" value="365" v-model="month"> 360天会员</label>
+                                <label><input class="aui-radio" type="radio" value="36500" v-model="month"> 永久会员</label>
+                                <br>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            <p>
+                <div class="aui-btn aui-btn-info aui-btn-block" v-on:click="chongzhivip()">充值{{month}}天会员(需要{{sum2}}金币)</div>
+            </p>
+            <br>
+            <h3>充值会员后你可以得到</h3>
+            <p>直接在直播页面切换主播房间</p>
+            <p>搜索喜欢的主播</p>
+            <p>后台下载你喜欢的主播直播</p>
+            <p>更多精彩功能。。。</p>
+            <div class="clear"></div>
+
+        </div> -->
+        <div class="chongzhi" v-if="windos">
+            <h3>兑换收藏<span>拥有{{userInfo.cnum}}</span></h3>
+            <div class="aui-content aui-margin-b-15">
+                <ul class="aui-list aui-form-list" style="margin:0.6rem 0">
+                    <li class="aui-list-item">
+                        <div class="aui-list-item-inner">
+                            <div class="aui-list-item-label">
+                                兑换数量
+                            </div>
+                            <div class="aui-list-item-input">
+                                <div class="aui-range">
+                                    <input type="range" class="aui-range" max="20" min="0" step="2" v-model="range" />
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            <p>
+                <div class="aui-btn aui-btn-info aui-btn-block" v-on:click="submit()">兑换{{range}}个({{sum}}金币)</div>
+            </p>
+            <div class="clear"></div>
+
+        </div>
+        <div class="chongzhi" v-else>
+            <h3>先购买卡密再充值</h3>
+            <ul class="aui-list aui-form-list input">
+                <li class="aui-list-item">
+                    <div class="aui-list-item-inner">
+                        <div class="aui-list-item-label">
+                            卡密
+                        </div>
+                        <div class="aui-list-item-input">
+                            <input type="text" placeholder="请输入充值卡密" v-model="kamiNum">
+                        </div>
+                        <div class="" @click="zhantie()">
+                            <p><div class="aui-btn aui-btn-info"><span class="aui-iconfont aui-icon-edit"></span>粘贴</div></p>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+            <p>
+                <div class="aui-btn aui-btn-info aui-btn-block" v-on:click="chongzhi()">充值</div>
+            </p>
+            <section class="aui-grid aui-margin-b-15" style="margin-top:0.6rem;">
+                <div class="aui-row">
+                    <div class="aui-col-xs-6" v-on:click="buyKami('500')">
+                        <img src="../images/img/500jb.png" alt="">
+                    </div>
+                    <div class="aui-col-xs-6" v-on:click="buyKami('1000')">
+                        <img src="../images/img/1000jb.png" alt="">
+                    </div>
+                </div>
+            </section>
+            <div class="clear"></div>
+        </div>
+
+    </div>
+
+</body>
+<script type="text/javascript" src="../script/api.js"></script>
+<script type="text/javascript" src="../script/aui-toast.js"></script>
+<script type="text/javascript" src="../script/vue.min.js"></script>
+<script type="text/javascript" src="../script/aui-tab.js"></script>
+<script type="text/javascript">
+    apiready = function() {
+        vm.getUserInfo();
+    }
+
+    var tab = new auiTab({
+        element: document.getElementById("tab"),
+        index: 1,
+        repeatClick: false
+    }, function(ret) {
+        if (ret.index == 1) {
+            vm.windos = true;
+        } else {
+            vm.windos = false;
+        }
+    });
+
+    var vm = new Vue({
+        el: '#bx',
+        data: {
+            userInfo: '',
+            windos: true,
+            range: 5,
+            kamiNum: '',
+            month: 30
+        },
+        computed: {
+
+            sum: function() {
+                return this.range * 50
+            },
+            sum2: function() {
+                var coin;
+                if (this.month == 30) {
+                    coin = 900;
+                } else if (this.month == 90) {
+                    coin = 2600;
+                } else if (this.month == 365) {
+                    coin = 8000;
+                } else {
+                    coin = 10000;
+                }
+                return coin
+            }
+        },
+        methods: {
+            zhantie:function () {
+                var clipBoard = api.require('clipBoard');
+                clipBoard.get(function(ret, err) {
+                    if (ret.value) {
+                        vm.kamiNum = ret.value;
+                    } else {
+                        alert('剪贴板不存在卡密');
+                    }
+                });
+            },
+            addDate: function(days) {
+                var date = '';
+                date = new Date();
+                date.setDate(date.getDate() + parseInt(days));
+                console.log(date.valueOf());
+                return parseInt(date.getTime()/1000);
+            },
+            chongzhivip: function() {
+                if (!vm.userInfo) {
+                    var toast = new auiToast({});
+                    toast.fail({
+                        title: "请先注册登录！",
+                        duration: 2000
+                    });
+                    return;
+                }
+                if (vm.userInfo.coin >= vm.sum2) {
+
+                } else {
+                    alert('金币不够哎，去隔壁充值吧！')
+                    return;
+                }
+                api.confirm({
+                    title: '点击确定兑换',
+                    msg: '使用' + vm.sum2 + '个金币兑换' + vm.month + '天会员',
+                    buttons: ['确定', '取消']
+                }, function(ret, err) {
+                    console.log(JSON.stringify(ret));
+                    if (ret.buttonIndex == 1) {
+                        var toast = new auiToast({});
+                        toast.loading({
+                            title: "正在充值，请勿点击返回",
+                            duration: 2000
+                        })
+                        var nowTime = new Date();
+                        var vipData = vm.addDate(vm.month);
+
+                        var newCoin = parseInt(vm.userInfo.coin) - parseInt(vm.sum2);
+                        var model = api.require('model');
+                        model.updateById({
+                            class: 'user',
+                            id: vm.userInfo.id,
+                            value: {
+                                isvip: vipData,
+                                coin:newCoin
+                            }
+                        }, function(ret, err) {
+                            if (ret) {
+                                toast.hide();
+                                toast.custom({
+                                    title: "充值成功",
+                                    html: '<i class="aui-iconfont aui-icon-laud"></i>',
+                                    duration: 2000
+                                });
+                                vm.userInfo = ret;
+                                $api.setStorage('user', ret);
+                                api.sendEvent({
+                                    name: 'loginOn',
+                                    extra: {
+                                        loginInfo: ret
+                                    }
+                                });
+                                vm.setOrder(0, vm.sum2, '会员充值' + vm.month + '天')
+                            } else {
+                                toast.hide();
+                                alert(JSON.stringify(err));
+                            }
+                        });
+                    } else {
+                        //  alert( JSON.stringify( err ) );
+                    }
+                });
+
+
+
+            },
+            dataStr: function(timestamp) {
+                var d = new Date(timestamp * 1000); //根据时间戳生成的时间对象
+                var date = (d.getFullYear()) + "-" +
+                    (d.getMonth() + 1) + "-" +
+                    (d.getDate()) + " " +
+                    (d.getHours()) + ":" +
+                    (d.getMinutes()) + ":" +
+                    (d.getSeconds());
+                return date;
+            },
+            buyKami: function(num) {
+                alert('关闭充值渠道！');
+                return;
+                //这里是购买卡密链接
+                var buyUrl = ''
+                if (num == '500') {
+                    buyUrl = 'http://www.996fk.com/';
+                } else if (num == '1000') {
+                    buyUrl = 'http://www.996fk.com/';
+                } else {
+                    buyUrl = 'http://www.996fk.com/';
+                }
+                api.openApp({
+                    androidPkg: 'android.intent.action.VIEW',
+                    mimeType: 'text/html',
+                    uri: buyUrl
+                }, function(ret, err) {
+                    if (ret) {
+                        api.toast({
+                            msg: '请在打开的网页中付款并获取卡密',
+                            duration: 2000,
+                            location: 'bottom'
+                        });
+                    } else {
+                        // alert(JSON.stringify(err));
+                    }
+                });
+            },
+            chongzhi: function() {
+                if (!vm.userInfo) {
+                    var toast = new auiToast({});
+                    toast.fail({
+                        title: "请先注册登录！",
+                        duration: 2000
+                    });
+                    return;
+                }
+                toast = new auiToast({});
+                toast.loading({
+                    title: "正在获取卡密信息",
+                    duration: 2000
+                })
+                if (vm.kamiNum) {
+                    var query = api.require("query");
+
+                    query.createQuery(function(ret, err) {
+                        if (ret && ret.qid) {
+                            var queryId = ret.qid;
+
+                            query.whereEqual({
+                                qid: queryId,
+                                column: "kami",
+                                value: vm.kamiNum
+                            });
+
+                            query.limit({
+                                qid: queryId,
+                                value: "20"
+                            });
+
+                            var model = api.require("model");
+
+                            model.findAll({
+                                class: "kami",
+                                qid: queryId
+                            }, function(ret, err) {
+                                console.log(JSON.stringify(ret));
+                                console.log(JSON.stringify(ret.length));
+                                if (ret.length == 0) {
+                                    toast.hide();
+                                    vm.kamiNum = '';
+                                    alert('未找到此条卡密')
+                                } else {
+                                    var retKami = ret[0];
+                                    if (retKami.shiyong == true) {
+                                        toast.hide();
+                                        vm.kamiNum = '';
+                                        alert('此条卡密已使用')
+                                    } else {
+                                        if (retKami.type == "500") {
+                                            toast.hide();
+                                            api.confirm({
+                                                title: '卡密正确',
+                                                msg: '卡密可以兑换500金币，点击确定使用',
+                                                buttons: ['确定', '取消']
+                                            }, function(ret, err) {
+                                                var index = ret.buttonIndex;
+                                                if (index == 1) {
+                                                    toast.loading({
+                                                            title: "正在充值，请勿点击返回",
+                                                            duration: 2000
+                                                        })
+                                                        //修改卡密信息，为已使用状态
+                                                    var model = api.require('model');
+                                                    model.updateById({
+                                                        class: 'kami',
+                                                        id: retKami.id,
+                                                        value: {
+                                                            shiyong: true,
+                                                            userid: vm.userInfo.id
+                                                        }
+                                                    }, function(ret, err) {
+                                                        if (ret) {
+                                                            //卡密信息修改完成，修改会员属性信息
+                                                            var newCoin = parseInt(vm.userInfo.coin) + 500;
+                                                            var model = api.require('model');
+                                                            model.updateById({
+                                                                class: 'user',
+                                                                id: vm.userInfo.id,
+                                                                value: {
+                                                                    coin: newCoin
+                                                                }
+                                                            }, function(ret, err) {
+                                                                if (ret) {
+                                                                    toast.hide();
+                                                                    toast.custom({
+                                                                        title: "充值成功",
+                                                                        html: '<i class="aui-iconfont aui-icon-laud"></i>',
+                                                                        duration: 2000
+                                                                    });
+                                                                    vm.userInfo = ret;
+                                                                    $api.setStorage('user', ret);
+                                                                    api.sendEvent({
+                                                                        name: 'loginOn',
+                                                                        extra: {
+                                                                            loginInfo: ret
+                                                                        }
+                                                                    });
+                                                                    vm.setOrder(1, 500, '金币充值')
+                                                                } else {
+                                                                    toast.hide();
+                                                                    alert(JSON.stringify(err));
+                                                                }
+                                                            });
+
+
+                                                        } else {
+                                                            toast.hide();
+                                                            alert(JSON.stringify(err));
+                                                        }
+                                                    });
+                                                }
+                                            });
+                                        } else if (retKami.type == "1000") {
+                                            toast.hide();
+                                            api.confirm({
+                                                title: '卡密正确',
+                                                msg: '卡密可以兑换1000金币，点击确定使用',
+                                                buttons: ['确定', '取消']
+                                            }, function(ret, err) {
+                                                var index = ret.buttonIndex;
+                                                if (index == 1) {
+                                                    toast.loading({
+                                                            title: "正在充值，请勿点击返回",
+                                                            duration: 2000
+                                                        })
+                                                        //修改卡密信息，为已使用状态
+                                                    var model = api.require('model');
+                                                    model.updateById({
+                                                        class: 'kami',
+                                                        id: retKami.id,
+                                                        value: {
+                                                            shiyong: true,
+                                                            userid: vm.userInfo.id
+                                                        }
+                                                    }, function(ret, err) {
+                                                        if (ret) {
+                                                            //卡密信息修改完成，修改会员属性信息
+                                                            var newCoin = parseInt(vm.userInfo.coin) + 1000;
+                                                            var model = api.require('model');
+                                                            model.updateById({
+                                                                class: 'user',
+                                                                id: vm.userInfo.id,
+                                                                value: {
+                                                                    coin: newCoin
+                                                                }
+                                                            }, function(ret, err) {
+                                                                if (ret) {
+                                                                    toast.hide();
+                                                                    toast.custom({
+                                                                        title: "充值成功",
+                                                                        html: '<i class="aui-iconfont aui-icon-laud"></i>',
+                                                                        duration: 2000
+                                                                    });
+                                                                    vm.userInfo = ret;
+                                                                    $api.setStorage('user', ret);
+                                                                    api.sendEvent({
+                                                                        name: 'loginOn',
+                                                                        extra: {
+                                                                            loginInfo: ret
+                                                                        }
+                                                                    });
+                                                                    vm.setOrder(1, 1000, '金币充值')
+                                                                } else {
+                                                                    toast.hide();
+                                                                    alert(JSON.stringify(err));
+                                                                }
+                                                            });
+                                                        } else {
+                                                            toast.hide();
+                                                            alert(JSON.stringify(err));
+                                                        }
+                                                    });
+                                                }
+                                            });
+                                        }else if (retKami.type == '30' ||retKami.type == '90'||retKami.type == '365'||retKami.type == '366') {
+                                            alert('您使用的是会员卡，请到会员中心充值！')
+                                            return;
+                                        }
+                                    }
+                                }
+                                // alert("ret: " + JSON.stringify(ret) + "\nerr: " + JSON.stringify(err));
+                            });
+                        }
+                    });
+
+                } else {
+                    toast.hide();
+                    alert('卡密为空，请先购买卡密！')
+                }
+
+            },
+            getUserInfo: function() {
+                userInfo = $api.getStorage('user');
+                if (userInfo) {
+                    if (userInfo.img) {
+
+                    } else {
+                        userInfo.img = {
+                            url: '../icon/icon.png'
+                        }
+                    }
+                    vm.userInfo = userInfo;
+                }
+            },
+            goLogin: function() {
+                api.openWin({
+                    name: 'login',
+                    url: './login.html',
+                    pageParam: {
+                        name: 'test'
+                    }
+                });
+            },
+            buyKa: function() {
+                api.openApp({
+                    androidPkg: 'android.intent.action.VIEW',
+                    mimeType: 'text/html',
+                    uri: 'http://www.admin333.com/ShopCategory-116032.html '
+                }, function(ret, err) {
+
+                });
+            },
+            submit: function() {
+                userInfo = $api.getStorage('user');
+                if (userInfo) {
+                    if (vm.range != 0) {
+                        if (vm.userInfo.coin >= vm.sum) {
+                            vm.setUserInfo();
+                        } else {
+                            alert('金币不够哎，去隔壁充值吧！');
+                            return;
+                        }
+                    } else {
+                        alert('0个收藏，无法兑换！')
+                    }
+                } else {
+                    var toast = new auiToast({});
+                    toast.fail({
+                        title: "请先注册登录！",
+                        duration: 2000
+                    });
+                }
+            },
+            setUserInfo: function() {
+                var newCoin = parseInt(vm.userInfo.coin) - parseInt(vm.sum);
+                var newCnum = parseInt(vm.userInfo.cnum) + parseInt(vm.range)
+                var model = api.require('model');
+                model.updateById({
+                    class: 'user',
+                    id: vm.userInfo.id,
+                    value: {
+                        coin: newCoin,
+                        cnum: newCnum
+                    }
+                }, function(ret, err) {
+                    if (ret) {
+                        $api.setStorage('user', ret);
+                        vm.userInfo = ret;
+                        api.sendEvent({
+                            name: 'loginOn',
+                            extra: {
+                                loginInfo: ret
+                            }
+                        });
+
+                        vm.setOrder(0, parseInt(vm.sum), '购买收藏')
+                    } else {
+                        alert(JSON.stringify(err));
+                    }
+                });
+            },
+            setOrder: function(type, ordernum, orderinfo) {
+                var relation = api.require('relation');
+                relation.insert({
+                    class: 'user',
+                    id: vm.userInfo.id,
+                    column: 'order',
+                    value: {
+                        type: type,
+                        ordernum: ordernum,
+                        orderinfo: orderinfo
+                    }
+                }, function(ret, err) {
+                    if (ret) {
+                        //    alert( JSON.stringify( ret) );
+                    } else {
+                        alert('写入订单失败，请检查网络');
+                    }
+                });
+            }
+        }
+    });
+</script>
+
+</html>

@@ -1,0 +1,157 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,initial-scale=1.0,width=device-width" />
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>Hello APP</title>
+    <link rel="stylesheet" type="text/css" href="./css/aui.css" />
+    <style type="text/css">
+
+    </style>
+</head>
+
+<body>
+    <div class="demo">
+
+    </div>
+    <footer class="aui-bar aui-bar-tab" id="footer">
+        <div class="aui-bar-tab-item aui-active" tapmode>
+            <i class="aui-iconfont aui-icon-home"></i>
+            <div class="aui-bar-tab-label">首页</div>
+        </div>
+        <div class="aui-bar-tab-item" tapmode>
+            <i class="aui-iconfont aui-icon-video"></i>
+            <div class="aui-bar-tab-label">直播</div>
+        </div>
+        <div class="aui-bar-tab-item" tapmode>
+            <i class="aui-iconfont aui-icon-paper"></i>
+            <div class="aui-bar-tab-label">磁力搜索</div>
+        </div>
+        <div class="aui-bar-tab-item" tapmode>
+            <div class="aui-dot"></div>
+            <i class="aui-iconfont aui-icon-my"></i>
+            <div class="aui-bar-tab-label">我的</div>
+        </div>
+    </footer>
+</body>
+<script type="text/javascript" src="./script/api.js"></script>
+<script type="text/javascript" src="./script/aui-tab.js"></script>
+<script type="text/javascript" src="./script/vue.min.js"></script>
+<script type="text/javascript">
+    apiready = function() {
+    api.setStatusBarStyle({
+        style: 'light'
+    });
+
+        console.log('开始载入app！');
+        //开启frame
+        vm.countFooter();
+        vm.aui_tab_begin();
+        vm.exit_app();
+    };
+
+    var vm = new Vue({
+        el: '#footer',
+        data: {},
+        methods: {
+            //监听app退出事件
+            exit_app: function() {
+                api.addEventListener({
+                    name: 'keyback'
+                }, function(ret, err) {
+                    api.toast({
+                        msg: '再按一次返回键退出' + api.appName,
+                        duration: 2000,
+                        location: 'bottom'
+                    });
+                    api.addEventListener({
+                        name: 'keyback'
+                    }, function(ret, err) {
+                        var appId = api.appId;
+                        api.closeWidget({
+                            id: appId, //你的APPid
+                            retData: {
+                                name: 'closeWidget'
+                            },
+                            animation: {
+                                type: 'flip',
+                                subType: 'from_bottom',
+                                duration: 500
+                            },
+                            silent: true
+                        });
+                    });
+                    setTimeout(function() {
+                        vm.exit_app();
+                    }, 3000);
+                });
+            },
+            //计算公共footer高度
+            countFooter: function() {
+                var footer = $api.byId('footer');
+                var footerPos = $api.offset(footer);
+                api.parseTapmode();
+                api.openFrameGroup({
+                    name: 'group1',
+                    background: '#fff',
+                    scrollEnabled: false,
+                    rect: {
+                        x: 0,
+                        y: 0,
+                        w: 'auto',
+                        h: api.frameHeight - footerPos.h
+                    },
+                    index: 0,
+                    preload: 4,
+                    frames: [{
+                        name: 'list',
+                        url: './html/index.html',
+                        bgColor: '#fff',
+                        allowEdit: false,
+                        overScrollMode: 'always'
+                    }, {
+                        name: 'list',
+                        url: './html/list.html',
+                        bgColor: '#fff',
+                        allowEdit: false,
+                        overScrollMode: 'always'
+                    }, {
+                        name: 'list',
+                        url: './html/tools.html',
+                        bgColor: '#fff',
+                        allowEdit: true,
+                        overScrollMode: 'always',
+                    }, {
+                        name: 'wode',
+                        url: './html/wode.html',
+                        bgColor: '#fff',
+                        allowEdit: false,
+                        overScrollMode: 'always'
+                    }]
+                }, function(ret, err) {
+                    var index = ret.index;
+                });
+            },
+            //aui-tab点击事件
+            aui_tab_begin: function() {
+                var tab = new auiTab({
+                    element: document.getElementById("footer")
+                }, function(ret) {
+                    console.log('点击了第' + ret.index + '个窗口');
+                    if (ret) {
+                        api.setFrameGroupIndex({
+                            name: 'group1',
+                            index: ret.index - 1,
+                            scroll: true
+                        });
+                        // document.getElementById("demo").textContent = ret.index;
+                    }
+                });
+            }
+        }
+    });
+</script>
+
+</html>

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="../css/aui.css" />
+    <link rel="stylesheet" type="text/css" href="../css/aui-pull-refresh.css" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0" />
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>首页</title>
+    <style>
+        body {
+            background-color: rgba(0, 0, 0, 0);
+        }
+        .aui-bar-nav {
+            top: 0;
+            line-height: 2.25rem;
+            background: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0));
+            color: #ffffff;
+        }
+        .qunping{
+            margin-top: 140%;
+            margin-left: 80%;
+            position: absolute;;
+            color: #fff;
+            padding: 0.3rem 0.8rem;
+            border: #fff solid 1px;
+        }
+        .qunping:active{
+            background: #fff;
+            color: #009688
+        }
+        .baidi{
+            height: 100%;
+            position: absolute;
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="aui-content aui-margin-b-15" id="bx">
+
+    </div>
+</body>
+<script type="text/javascript" src="../script/api.js"></script>
+<script type="text/javascript" src="../script/aui-toast.js"></script>
+<script type="text/javascript" src="../script/aui-pull-refresh.js"></script>
+<script type="text/javascript" src="../script/vue.min.js"></script>
+<script type="text/javascript">
+    apiready = function() {
+        // vm.listenerAli();
+        api.toast({
+            msg: '直播间广告与开发者无关，请勿相信！！！',
+            duration: 2000,
+            location: 'bottom'
+        });
+
+        // vm.rongYun()
+    }
+    var vm = new Vue({
+        el: '#bx',
+        data: {
+            live: '',
+            pingtai: '',
+            quanping:false,
+            messge:''
+        },
+        methods: {
+
+        }
+    })
+</script>
+
+</html>

@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" type="text/css" href="../css/aui.css" />
+    <link rel="stylesheet" type="text/css" href="../css/aui-pull-refresh.css" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0" />
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>首页</title>
+    <style>
+        .top {
+            position: fixed;
+            top: 0;
+            z-index: 1199;
+        }
+
+        .aui-grid [class*=aui-col-] {
+            padding: 2px;
+        }
+
+        .aui-grid .aui-badge {
+            left: 75%;
+            z-index: 99;
+        }
+
+        .aui-badge {
+            display: inline-block;
+            width: 2rem;
+            text-align: center;
+            min-width: 1rem;
+            height: 1rem;
+            line-height: 1rem;
+            padding: 0 0.1rem;
+            font-size: 0.5rem;
+            color: #ffffff;
+            background-color: rgba(82, 82, 82, 0.21);
+            border-radius: 0.5rem;
+            border: #fff solid 1px;
+        }
+
+        .aui-badge::before {
+            content: "●";
+            color: #00ce00;
+            padding-right: 0.1rem;
+        }
+
+        .aui-grid .aui-grid-label {
+            display: inline-block;
+            font-size: 0.6rem;
+            position: relative;
+            margin-top: 0.25rem;
+            margin-left: 0.3rem;
+            float: left;
+            padding-left: 0rem;
+            font-weight: bold;
+            max-width: 70%;
+        }
+
+        .aui-grid .aui-iconfont {
+            position: relative;
+            z-index: 20;
+            top: 0;
+            height: 0.7rem;
+            font-size: 0.6rem;
+            line-height: 0.5rem;
+            margin: 0.2rem 0.2rem;
+            float: right;
+        }
+
+        .aui-grid [class*=aui-col-xs-]:active {
+            background-color: #fff;
+        }
+
+        .icon-button {
+            background: #ffc107;
+            padding: 0.1rem 0.3rem;
+            color: #fff;
+        }
+
+        .pingtai-img {
+            position: relative;
+            padding-top: 100%;
+            width: 100%;
+        }
+
+        .pingtai-img-png {
+            max-width: 100%;
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .hongbao {
+            width: 100%;
+            height: auto;
+        }
+
+        .bianlan {
+            background: #fff;
+            padding: 0.4rem;
+            height: 2rem;
+            border-top: solid #f5f5f5 0.001rem;
+        }
+
+        .wenzi {
+            line-height: 1.2rem;
+            font-size: 0.8rem;
+            border-left: 0.1rem solid #e51c23;
+            display: inline-block;
+            padding-left: 0.6rem;
+            margin-left: 0.2rem;
+            font-weight: bold;
+        }
+
+        .wenzi-right {
+            float: right;
+            line-height: 1.2rem;
+            font-size: 0.8rem;
+            display: inline-block;
+            font-size: 0.6rem;
+            color: #c1c1c1;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="aui-bar aui-bar-nav top aui-bar-light" style="padding-top:25px;">
+        <a class="aui-pull-left" onclick="api.closeWin()" tapmode>
+            <span class="aui-iconfont aui-icon-left"></span>
+        </a>
+        <div class="aui-title">搜索主播</div>
+    </header>
+    <div class="aui-refresh-content" style="margin-top:70px">
+
+        <section class="aui-grid aui-margin-b-15" id="bx">
+            <div class="aui-searchbar" id="search">
+                <div class="aui-searchbar-input aui-border-radius" tapmode="">
+                    <i class="aui-iconfont aui-icon-search"></i>
+                    <form action="javascript:search();">
+                        <input type="search" placeholder="请输入搜索内容" id="search-input">
+                    </form>
+                </div>
+                <div class="aui-searchbar-cancel" tapmod="" v-on:click="doSearch()">搜索</div>
+            </div>
+            <div class="aui-row">
+                <div class="aui-col-xs-4" v-for="(item, index) in collectionList">
+                    <!-- <div class="aui-badge">在线</div> -->
+                    <div class="pingtai-img">
+                        <img v-lazy=item.img alt="" class="pingtai-img-png" v-on:click="vm.openZhubo(item,index)" tapmode>
+                    </div>
+                    <div class="aui-grid-label aui-ellipsis-1">{{item.title|cleanStr}}</div>
+                    <i class="icon-button aui-iconfont aui-icon-star" v-on:click="collection(item)"></i>
+                </div>
+            </div>
+            <div class="bianlan">
+                <div class="wenzi">
+                    主播推荐
+                </div>
+                <div class="wenzi-right">
+                    <!-- 合计:约120个 -->
+                </div>
+            </div>
+            <div class="aui-row">
+                <div class="aui-col-xs-6" v-for="(item, index) in listCmputed">
+                    <div class="aui-badge">在线</div>
+                    <div class="pingtai-img">
+                        <img v-lazy=item.img alt="" class="pingtai-img-png" v-on:click="vm.openLiveList(item,index)" tapmode>
+                    </div>
+                    <div class="aui-grid-label aui-ellipsis-1">{{item.title|cleanStr}}</div>
+                    <i class="icon-button aui-iconfont aui-icon-star" v-on:click="collection(item)"></i>
+                </div>
+            </div>
+            <h3 v-if="liveList.length == 0">最近服务器不好，若不显示列表，请多点几次右上角刷新重试！</h3>
+        </section>
+    </div>
+</body>
+<script type="text/javascript" src="../script/api.js"></script>
+<script type="text/javascript" src="../script/aui-toast.js"></script>
+<script type="text/javascript" src="../script/aui-pull-refresh.js"></script>
+<script type="text/javascript" src="../script/vue.min.js"></script>
+<script type="text/javascript" src="../script/SHA1.js"></script>
+<script type="text/javascript" src="../script/vue-lazyload.js"></script>
+<script type="text/javascript">
+    apiready = function() {
+        vm.listenLoginOn();
+        vm.getUserInfo();
+        vm.listenLoginOut();
+    }
+
+    Vue.use(VueLazyload, {
+        preLoad: 1.3,
+        error: '../images/21606006.jpg',
+        loading: '../images/21606006.jpg',
+        attempt: 1
+    });
+    var vm = new Vue({
+        el: '#bx',
+        data: {
+            jsonAddress: 'http://api.hclyz.com:81/mf/',
+            liveList: [],
+            title: '',
+            pingtailist: [],
+            userInfo: '',
+            collectionList: [],
+            abc: false
+        },
+        computed: {
+            listCmputed: function() {
+                return this.liveList.filter(function(item) {
+                    return item.address.search("smm.mengyanwang.com/er/") == -1 && item.address.search("video.meidwell.com:81/") == -1 && item.address.search("clouddn.com") == -1;
+                })
+            }
+        },
+        methods: {
+            doSearch: function() {
+                var searchValue = document.getElementById("search-input").value;
+                if (searchValue) {
+                    vm.getCili(searchValue)
+                }
+            },
+            getCili: function(searchValue) {
+                toast = new auiToast({});
+                toast.loading({
+                    title:"正在获取平台数据！",
+                    duration:2000
+                });
+                api.ajax({
+                    url: vm.jsonAddress + 'json.txt',
+                    method: 'get'
+                }, function(ret, err) {
+                    if (ret) {
+                        // alert( JSON.stringify( ret ) );
+                        vm.pingtailist = ret.pingtai;
+                        //取消loading窗口
+                        toast.hide();
+
+                        for (var i = 0; i < vm.pingtailist.length; i++) {
+                            toast.loading({
+                                title:"正在搜索【"+vm.pingtailist[i].title+"】平台数据！",
+                                duration:2000
+                            });
+                            api.ajax({
+                                url: vm.jsonAddress + vm.pingtailist[i].address,
+                                method: 'get'
+                            },function(ret, err){
+                                if (ret) {
+                                    var zhubo = ret.zhubo;
+                                    // console.log(JSON.stringify(zhubo));
+                                    for (var n = 0; i < zhubo.length; n++) {
+                                        if (zhubo[i].title.indexOf(searchValue)!=-1) {
+                                            vm.liveList.push(zhubo[i]);
+                                            console.log(vm.liveList);
+                                        }
+                                    }
+                                    toast.hide();
+                                } else {
+                                    toast.hide();
+                                    toast.fail({
+                                        title: "请检查网络",
+                                        duration: 2000
+                                    });
+                                }
+                            });
+                        }
+                        toast.hide();
+                    } else {
+                        // pullRefresh.cancelLoading();
+                        toast.hide();
+                        toast.fail({
+                            title: "请检查网络",
+                            duration: 2000
+                        });
+                    }
+                });
+
+            },
+            listenLoginOn: function() {
+                api.addEventListener({
+                    name: 'loginOn'
+                }, function(ret, err) {
+                    vm.getUserInfo()
+                });
+            },
+            openLiveList: function(address, index) {
+                api.openWin({
+                    name: 'zhibo',
+                    url: './zhibo.html',
+                    pageParam: {
+                        liveAddress: address,
+                        pingtai: vm.pingtai,
+                        liveList: vm.listCmputed,
+                        num: index
+                    }
+                });
+            },
+            openZhubo: function(item, index) {
+                api.openWin({
+                    name: 'zhibo',
+                    url: './zhibo.html',
+                    pageParam: {
+                        liveAddress: item,
+                        pingtai: item.pingtai,
+                        liveList: vm.listCmputed,
+                        num: index
+                    }
+                });
+            },
+            hongbao: function() {
+                api.openWin({
+                    name: 'hongbao',
+                    url: 'https://ds.alipay.com/?from=mobilecodec&scheme=alipays%3a%2f%2fplatformapi%2fstartapp%3fsaId%3d10000007%26clientVersion%3d3.7.0.0718%26qrcode%3dhttps%253a%252f%252fqr.alipay.com%252fc1x039284fivmgsavhgdw37%253f_s%253dweb-other&from=mobilecodec',
+                    pageParam: {
+                        name: 'test'
+                    }
+                });
+            },
+            collection: function(zhubo) {
+                if (vm.abc) {
+                    toast = new auiToast({});
+                    toast.fail({
+                        title: "请休息两秒再添加",
+                        duration: 2000
+                    });
+                    return;
+                }
+                vm.abc = true;
+                setTimeout(function() {   
+                    vm.abc = false;
+                }, 3000);
+                if (vm.isLogin()) {
+                    user = $api.getStorage('user');
+                    zhubo.pingtai = vm.pingtai;
+                    console.log(JSON.stringify(zhubo));
+                    collection = $api.getStorage('collection');
+                    if (!collection) {
+                        collection = [];
+                    }
+                    if (collection.length >= vm.userInfo.cnum) {
+                        toast = new auiToast({});
+                        toast.fail({
+                            title: "收藏已满，取消部分后可继续添加",
+                            duration: 2000
+                        });
+                        return;
+                    }
+
+                    var toast = new auiToast({});
+                    toast.success({
+                        title: "收藏成功",
+                        duration: 2000
+                    });
+
+                    var relation = api.require('relation');
+                    relation.insert({
+                        class: 'user',
+                        id: user.id,
+                        column: 'collection',
+                        value: {
+                            pingtai: zhubo.pingtai,
+                            address: zhubo.address,
+                            img: zhubo.img,
+                            title: zhubo.title
+                        }
+                    }, function(ret, err) {
+                        if (ret) {
+                            zhubo.id = ret.id;
+                            collection.push(zhubo);
+                            var relation = api.require('relation');
+                            relation.findAll({
+                                class: 'user',
+                                id: user.id,
+                                column: 'collection'
+                            }, function(ret, err) {
+                                if (ret) {
+                                    console.log(JSON.stringify(ret));
+                                    $api.setStorage('collection', ret);
+                                    api.sendEvent({
+                                        name: 'addCollection'
+                                    });
+
+                                } else {
+                                    alert(JSON.stringify(err));
+                                }
+                            });
+                        }
+                    });
+                } else {
+                    var toast = new auiToast;
+                    toast.fail({
+                        title: "请登录后使用收藏功能！",
+                        duration: 2000
+                    });
+                    return;
+                }
+
+            },
+            isLogin: function() {
+                var user = $api.getStorage('user');
+                if (user) {
+                    return true;
+                } else {
+                    return false;
+                }
+
+            },
+            getUserInfo: function() {
+                if (vm.isLogin()) {
+                    var model = api.require("model");
+                    var login = $api.getStorage('login');
+                    model.findById({
+                        class: "user",
+                        id: login.userId
+                    }, function(ret, err) {
+                        if (ret) {
+                            $api.setStorage('user', ret);
+                            vm.userInfo = ret;
+
+                        }
+                    });
+                } else {
+                    api.toast({
+                        msg: '请登录后使用部分功能',
+                        duration: 2000,
+                        location: 'bottom'
+                    });
+
+                }
+
+            },
+            listenLoginOut: function() {
+                api.addEventListener({
+                    name: 'loginOut'
+                }, function(ret, err) {
+                    vm.user = '';
+                    vm.collection = [];
+                });
+            }
+        },
+        filters: {
+            cleanStr: function(value) {
+                if (!value) return '';
+                for (var i = 0; i < 3; i++) {
+                    // value = decodeURI(value);
+                }
+                var items = value.split("%3F");
+                var value = items.join("");
+                return value;
+            }
+        }
+    })
+</script>
+
+</html>

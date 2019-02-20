@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" type="text/css" href="../css/aui.css" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0" />
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>首页</title>
+    <style>
+        body {
+            background-color: #000;
+        }
+
+        .top {
+            position: fixed;
+            top: 0;
+            z-index: 1199;
+        }
+
+        .aui-bar-nav {
+            top: 0;
+            line-height: 2.25rem;
+            background-color: rgba(0, 0, 0, 0.35);
+            color: #fff;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="bx"></div>
+</body>
+<script type="text/javascript" src="../script/api.js"></script>
+<script type="text/javascript" src="../script/vue.min.js"></script>
+<script type="text/javascript" src="../script/aui-toast.js"></script>
+<script type="text/javascript">
+    apiready = function() {
+        vm.openFrameCache();
+        vm.beginAli();
+        api.setFullScreen({
+            fullScreen: true
+        });
+    }
+
+    var vm = new Vue({
+        el: '#bx',
+        data: {
+            live: '',
+            pingtai: '',
+            liveAddress: ''
+        },
+        methods: {
+            change: function(live) {
+                // console.log(live);
+                mediaPlayer.destroy();
+                // mediaPlayer = api.require('aliyunLive');
+                mediaPlayer.init({
+                    rect: {
+                        x: 0,
+                        y: 0,
+                        w: api.winWidth,
+                        h: api.winHeight
+                    },
+                    accessKeyId: 'QxJIheGFRL926hFX',
+                    accessKeySecret: 'hipHJKpt0TdznQG2J4D0EVSavRH7mR',
+                    businessId: 'video_live',
+                }, function(ret, err) {
+                    if (ret) {
+                        setTimeout(function() {
+                            mediaPlayer.prepareToPlay({
+                                url: live
+                            }, function(ret, err) {
+                                mediaPlayer.play();
+                            });
+                        }, 100)
+
+                    }
+                });
+            },
+            configAli: function(type) {
+                switch (type) {
+                    case 'pause':
+                        mediaPlayer.pause();
+                        break;
+                }
+            },
+            beginAli: function() {
+                mediaPlayer = api.require('aliyunLive');
+                var pageParam = api.pageParam;
+                vm.pingtai = pageParam.pingtai;
+                vm.liveAddress = pageParam.liveAddress;
+                if (!pageParam.liveAddress.address) {
+                    var toast = new auiToast({});
+                    toast.fail({
+                        title: "未获取到播放地址！",
+                        duration: 2000
+                    });
+                    return;
+                }
+                mediaPlayer.init({
+                    rect: {
+                        x: 0,
+                        y: 0,
+                        w: api.winWidth,
+                        h: api.winHeight
+                    },
+                    accessKeyId: 'QxJIheGFRL926hFX',
+                    accessKeySecret: 'hipHJKpt0TdznQG2J4D0EVSavRH7mR',
+                    businessId: 'video_live',
+                }, function(ret, err) {
+                    if (ret) {
+                        mediaPlayer.prepareToPlay({
+                            url: pageParam.liveAddress.address
+                        }, function(ret, err) {
+                            if (ret && ret.status) {
+                                mediaPlayer.play();
+                                mediaPlayer.setMediaType({
+                                    type: 0
+                                });
+                                mediaPlayer.setVideoScalingMode({
+                                    mode: 1
+                                });
+                                mediaPlayer.setTimeout({
+                                    timeout: 5000
+                                });
+
+                                vm.listenerKeyback();
+                                vm.listenerPause();
+                                // vm.listenerAli();
+                            }
+                        });
+                    }
+                });
+            },
+            listenerPause: function() {
+                api.addEventListener({
+                    name: 'pause'
+                }, function(ret, err) {
+                    mediaPlayer.pause();
+                });
+                api.addEventListener({
+                    name: 'resume'
+                }, function(ret, err) {
+                    mediaPlayer.play();
+                });
+            },
+            listenerKeyback: function() {
+
+                api.addEventListener({
+                    name: 'keyback'
+                }, function(ret, err) {
+                    api.closeWin({
+                        name: 'zhibo'
+                    });
+                    api.setFullScreen({
+                        fullScreen: false
+                    });
+
+                });
+            },
+            listenerAli: function() {
+                mediaPlayer.addEventListener(function(ret) {
+                    if (ret.eventName == 'prepared') {
+                        api.sendEvent({
+                            name: 'prepared'
+                        });
+                    }
+                    if (ret.eventName == 'error') {
+                        messege = '';
+                        switch (ret.errorCode) {
+                            case 511:
+                                messege = '加载超时';
+                                break;
+                            case 501:
+                                messege = '未知错误';
+                                break;
+                            case 502:
+                                messege = '没有输入文件';
+                                break;
+                            case 503:
+                                messege = 'no surface';
+                                break;
+                            case 504:
+                                messege = '视频资源或者网络不可用';
+                                break;
+                            case 505:
+                                messege = '不支持此编码';
+                                break;
+                            case 506:
+                                messege = '没有足够内存';
+                                break;
+                            case 401:
+                                messege = '网络视频播放错误，没有网络或者网络状态不好的情况下播放网络视频会出现该错误';
+                                break;
+                            case 402:
+                                messege = '没有优先级';
+                                break;
+                            case 400:
+                                messege = '非法请求';
+                                break;
+                            case 509:
+                                messege = '未认证';
+                                break;
+                            case 510:
+                                messege = '资源访问失败';
+                                break;
+                            default:
+
+                        }
+                        alert(messege);
+                    }
+                });
+            },
+            openFrameCache: function() {
+                var pageParam = api.pageParam;
+                pingtai = pageParam.pingtai;
+                liveAddress = pageParam.liveAddress;
+                liveList = pageParam.liveList;
+                num = pageParam.num
+                api.openFrameGroup({
+                    name: 'farame-cache',
+                    background: 'rgba(0, 0, 0, 0)',
+                    scrollEnabled: true,
+                    rect: {
+                        x: 0,
+                        y: 0,
+                        w: 'auto',
+                        h: 'auto'
+                    },
+                    index: 1,
+                    frames: [{
+                        name: 'farame-cache',
+                        url: 'farame-cache.html',
+                        bgColor: 'rgba(0, 0, 0, 0)'
+                    }, {
+                        name: 'farame-cache2',
+                        url: 'farame-cache2.html',
+                        bgColor: 'rgba(0, 0, 0, 0)',
+                        pageParam: {
+                            pingtai: pingtai,
+                            liveAddress: liveAddress,
+                            liveList: liveList,
+                            num: num
+                        }
+                    }]
+                }, function(ret, err) {
+                    if (ret) {
+                        // vm.beginAli();
+
+                    } else {}
+                });
+            }
+
+        }
+    });
+</script>
+
+</html>

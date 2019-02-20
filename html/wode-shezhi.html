@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="../css/aui.css" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0" />
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>首页</title>
+    <style>
+
+    </style>
+</head>
+
+<body>
+    <header class="aui-bar aui-bar-nav aui-bar-light" style="padding-top:25px;">
+        <a class="aui-pull-left" onclick="vm.close()" tapmode>
+            <span class="aui-iconfont aui-icon-left"></span>
+        </a>
+        <div class="aui-title" id="title">设置</div>
+
+    </header>
+
+    <div class="aui-content aui-margin-b-15" id="bx">
+        <ul class="aui-list aui-list-in aui-margin-t-10">
+            <li class="aui-list-item" v-on:click="vm.clear()">
+                <div class="aui-list-item-inner">
+                    <div class="aui-list-item-title">修改资料</div>
+                </div>
+            </li>
+            <li class="aui-list-item" v-on:click="vm.clear()">
+                <div class="aui-list-item-inner">
+                    <div class="aui-list-item-title">清除缓存</div>
+                </div>
+            </li>
+            <li class="aui-list-item">
+                <div class="aui-list-item-inner">
+                    <div class="aui-list-item-label">
+                        直播间控件
+                    </div>
+                    <div class="aui-list-item-input">
+                        <input type="checkbox" class="aui-switch" v-model="kongjian">
+                    </div>
+                </div>
+            </li>
+        </ul>
+        <br>
+    <p><div class="aui-btn aui-btn-danger aui-btn-block" v-on:click="loginOut()">退出登录</div></p>
+    </div>
+
+</body>
+<script type="text/javascript" src="../script/api.js"></script>
+<script type="text/javascript" src="../script/aui-toast.js"></script>
+<script type="text/javascript" src="../script/vue.min.js"></script>
+<script type="text/javascript">
+    apiready = function() {
+        vm.getChat();
+    }
+
+    var vm = new Vue({
+        el: '#bx',
+        data: {
+            userInfo:'',
+            kongjian:''
+        },
+        methods: {
+            getChat:function () {
+                var chat = $api.getStorage('kongjian');
+                if (chat=="true") {
+                    vm.kongjian = true;
+                }else {
+                    vm.kongjian = false;
+                }
+                api.addEventListener({
+                    name: 'keyback'
+                }, function(ret, err) {
+                    $api.setStorage('kongjian', vm.kongjian);
+                    api.closeWin({});
+
+                });
+            },
+            close:function () {
+                    $api.setStorage('chat', vm.chat);
+                    api.closeWin({});
+            },
+            loginOut:function () {
+                $api.rmStorage('user');
+                $api.rmStorage('login');
+                api.sendEvent({
+                    name: 'loginOut'
+                });
+                api.openWin({
+                    name: 'login',
+                    url: './login.html',
+                    pageParam: {
+                        name: 'login'
+                    }
+                });
+                api.closeWin({});
+            },
+            clear:function () {
+                toast = new auiToast();
+                api.clearCache(function() {
+                    toast.success({
+                       title:"清除成功！",
+                       duration:2000
+                   });
+                });
+            }
+
+        }
+    });
+</script>
+
+</html>

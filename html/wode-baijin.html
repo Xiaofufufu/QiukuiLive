@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="../css/aui.css" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0" />
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>首页</title>
+    <style>
+        .top {
+            position: fixed;
+            top: 0;
+            z-index: 1199;
+        }
+
+        .baijin {
+            margin: 0 0.8rem;
+        }
+        .baijin>h3 {
+            font-size: 1.1rem;
+            margin: 0.6rem auto;
+            text-align: center;
+        }
+
+        .baijin>p {
+            font-size: 0.8rem;
+            margin-bottom: 0.4rem;
+            text-indent: 2em;
+        }
+
+        .baijin>img {
+            width: 60%;
+            margin: auto;
+            margin-bottom: 0.6rem;
+        }
+
+        span {
+            color: #e51c23;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="aui-bar aui-bar-nav aui-bar-light top" style="padding-top:25px;">
+        <a class="aui-pull-left" onclick="api.closeWin();" tapmode>
+            <span class="aui-iconfont aui-icon-left"></span>
+        </a>
+        <div class="aui-title" id="title">赞助开发者</div>
+
+    </header>
+
+
+    <div class="aui-content aui-margin-b-15 baijin" id="bx" style="margin-top:70px">
+        <h3>赞助开发者</h3>
+        <p>秋葵直播上线有一段时间了，一直未曾收取费用或者添加广告，为了秋葵的发展，恳请大家捐赠开发者，用于<b>购买付费接口和服务器日常开销。</b></p>
+        <img src="../images/wxpay.png" alt="">
+        <span class="aui-font-size-16">最新赞助（以赞助时间排序）:</span>
+        <p v-for="item in zanzhu">{{item.username}}赞助<span>{{item.juankuan}}</span>元</p>
+        <br>
+        <p>当然，不愿意捐赠的也可以选择点击首页领取支付宝红包的图片支持作者，去商店买烟，买水时使用余额宝付款就能使用红包抵扣,你省钱的同时，还能为开发者赚来一杯饮料钱。</p>
+        <p>
+            <div class="aui-btn aui-btn-info  aui-btn-block" v-on:click="vm.yuebao()">点我也可以领余额宝红包</div>
+        </p>
+        <img src="../images/yuebao.png" alt="">
+    </div>
+
+</body>
+<script type="text/javascript" src="../script/api.js"></script>
+<script type="text/javascript" src="../script/aui-toast.js"></script>
+<script type="text/javascript" src="../script/vue.min.js"></script>
+<script type="text/javascript" src="../script/aui-dialog.js"></script>
+<script type="text/javascript">
+    apiready = function() {
+        vm.getUserInfo();
+        vm.getZanzhu();
+    }
+
+    var vm = new Vue({
+        el: '#bx',
+        data: {
+            userInfo: '',
+            appVersion: '',
+            zanzhu: ''
+        },
+        methods: {
+            getUserInfo: function() {
+                vm.userInfo = $api.getStorage('user');
+                vm.appVersion = api.appVersion;
+            },
+            yuebao: function() {
+                api.openWin({
+                    name: 'yuebao',
+                    url: 'https://ds.alipay.com/?from=mobilecodec&scheme=alipays%3a%2f%2fplatformapi%2fstartapp%3fsaId%3d10000007%26clientVersion%3d3.7.0.0718%26qrcode%3dhttps%253a%252f%252fqr.alipay.com%252fc1x039284fivmgsavhgdw37%253f_s%253dweb-other&from=mobilecodec',
+                    pageParam: {
+                        name: 'test'
+                    }
+                });
+
+            },
+            getZanzhu: function() {
+                var query = api.require("query");
+
+                query.createQuery(function(ret, err) {
+                    if (ret && ret.qid) {
+                        var queryId = ret.qid;
+                        query.limit({
+                            qid: queryId,
+                            value: 20
+                        });
+                        query.desc({
+                            qid: queryId,
+                            column: 'id'
+                        });
+                        var model = api.require("model");
+
+                        model.findAll({
+                            class: "zanzhu",
+                            qid: queryId
+                        }, function(ret, err) {
+                            if (ret) {
+                                vm.zanzhu = ret;
+                            }
+                        });
+                    }
+                });
+            }
+        }
+    });
+</script>
+
+</html>
