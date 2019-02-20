@@ -32,6 +32,11 @@ App使用Apicloud制作的，需要使用mcm模块存放注册和收藏信息。
     <widget id="A000000000000"  version="0.0.1">
 
 修改成你自己的appid，要不然直接替换会出问题。
+
+**再添加如下这几个模块。**
+![model][4]
+
+**app首页，其他页面到文件夹里去看吧**
 ![app首页][2]
 
 *其他的请大家随缘修改吧。*
@@ -46,3 +51,4 @@ App使用Apicloud制作的，需要使用mcm模块存放注册和收藏信息。
   [1]: https://github.com/Xiaofufufu/QiukuiLive
   [2]: https://github.com/Xiaofufufu/QiukuiLive/blob/master/screenshots/index.png
   [3]: https://github.com/Xiaofufufu/QiukuiLive/blob/master/screenshots/qrcode.png
+  [4]: https://github.com/Xiaofufufu/QiukuiLive/blob/master/screenshots/model.png
